@@ -21,7 +21,6 @@ const GavelSVG = ({ className }: { className?: string }) => (
 
 const EmblemFallbackSVG = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 100 150" fill="currentColor" className={className}>
-    {/* Simplified Lion Capital representation for fallback */}
     <path d="M20 130 h60 v10 h-60 z" fill="#d4af37" />
     <path d="M25 120 h50 v10 h-50 z" fill="#c9a227" />
     <circle cx="50" cy="115" r="10" fill="#d4af37" />
@@ -41,17 +40,14 @@ const AshokaChakraSVG = ({ className }: { className?: string }) => {
     const cx = 130;
     const cy = 130;
 
-    // Line endpoints (rounded to fix hydration mismatch)
     const x1 = (cx + rInner * Math.sin(rad)).toFixed(3);
     const y1 = (cy - rInner * Math.cos(rad)).toFixed(3);
     const x2 = (cx + rOuter * Math.sin(rad)).toFixed(3);
     const y2 = (cy - rOuter * Math.cos(rad)).toFixed(3);
 
-    // Tip circle center
     const xTip = (cx + 108 * Math.sin(rad)).toFixed(3);
     const yTip = (cy - 108 * Math.cos(rad)).toFixed(3);
 
-    // Diamond between spokes
     const midRad = ((angle + 7.5) * Math.PI) / 180;
     const xDmd = (cx + 75 * Math.sin(midRad)).toFixed(3);
     const yDmd = (cy - 75 * Math.cos(midRad)).toFixed(3);
@@ -74,7 +70,7 @@ const AshokaChakraSVG = ({ className }: { className?: string }) => {
 
   return (
     <svg
-      width="260" height="260" viewBox="0 0 260 260"
+      width="160" height="160" viewBox="0 0 260 260"
       className={cn("animate-slow-spin", className)}
       style={{
         filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.6)) drop-shadow(0 0 40px rgba(212,175,55,0.3))',
@@ -103,7 +99,6 @@ export default function LandingPage() {
   const [emblemError, setEmblemError] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Stats counter effect
   const [casesCount, setCasesCount] = useState(0);
   const statsRef = useRef<HTMLDivElement>(null);
 
@@ -141,49 +136,59 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#06111f] text-white selection:bg-[#d4af37] selection:text-[#06111f] overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#06111f] text-white selection:bg-[#d4af37] selection:text-[#06111f] overflow-x-hidden font-sans relative">
 
-      {/* LAYER 0 — FIXED BACKGROUND */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(rgba(212,175,55,0.055) 1px, transparent 1px)',
+      {/* LAYER 0 — FIXED BACKGROUND (FIX 4, 5) */}
+      <div className="fixed inset-0 pointer-events-none z-[0]">
+        {/* 1. Base Dark Surface */}
+        <div className="absolute inset-0 bg-[#06111f]" />
+        
+        {/* 2. Aurora Glows (Fixed behind everything) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-[20%] -translate-y-1/2 w-[800px] h-[800px] pointer-events-none z-[1]" style={{
+          background: 'radial-gradient(ellipse, rgba(212,175,55,0.07) 0%, transparent 65%)'
+        }} />
+        <div className="absolute -top-[100px] -right-[80px] w-[450px] h-[450px] pointer-events-none z-[1]" style={{
+          background: 'radial-gradient(ellipse, rgba(255,153,51,0.05) 0%, transparent 70%)'
+        }} />
+        <div className="absolute -bottom-[100px] -left-[80px] w-[450px] h-[450px] pointer-events-none z-[1]" style={{
+          background: 'radial-gradient(ellipse, rgba(19,136,8,0.04) 0%, transparent 70%)'
+        }} />
+
+        {/* 3. Dot Grid (Fixed over glows but below all content) */}
+        <div className="absolute inset-0 z-[10]" style={{
+          backgroundImage: 'radial-gradient(circle, rgba(212,175,55,0.05) 1px, transparent 1px)',
           backgroundSize: '28px 28px'
         }} />
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#FF9933]/5 blur-[120px] rounded-full mix-blend-screen" />
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-[#138808]/5 blur-[120px] rounded-full mix-blend-screen" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#d4af37]/10 blur-[150px] rounded-full mix-blend-screen" />
       </div>
 
-      {/* LAYER 1 — TRICOLOR BAR */}
-      <div className="fixed top-0 left-0 w-full h-1 flex z-[100]">
+      {/* LAYER 1 — TRICOLOR BAR (FIX 3) */}
+      <div className="fixed top-0 left-0 w-full h-[5px] flex z-[200]">
         <div className="flex-1 bg-[#FF9933]" />
         <div className="flex-1 bg-[#f0ead6]" />
         <div className="flex-1 bg-[#138808]" />
       </div>
 
-      {/* LAYER 2 — NAVBAR */}
-      <nav className="fixed top-1 w-full h-[56px] bg-[#06111f]/85 backdrop-blur-[20px] border-b border-[#d4af37]/10 z-[90] flex items-center justify-between px-6 md:px-12">
-        <div className="flex items-center gap-2">
-          <div className="w-[44px] h-[44px] relative flex items-center justify-center">
-            {logoError ? <GavelSVG className="w-8 h-8 text-[#d4af37]" /> : (
-              <Image 
-                src="/images/logo.png" 
-                alt="Logo" 
-                width={44} 
-                height={44} 
-                className="object-contain"
-                onError={() => setLogoError(true)} 
-              />
-            )}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[17px] font-bold tracking-tight leading-none">NyayaSetu</span>
-            <span className="text-[9px] text-[#d4af37] leading-none tracking-[2px] uppercase mt-1">न्यायसेतु</span>
+      {/* LAYER 2 — NAVBAR (FIX 2, 3, 5) */}
+      <nav className="fixed top-[5px] w-full h-[64px] bg-[#06111f]/85 backdrop-blur-[20px] z-[100] flex items-center justify-between px-6 md:px-12" style={{ boxShadow: '0 1px 0 rgba(212,175,55,0.1)' }}>
+        <div className="flex items-center gap-[1px]">
+          {logoError ? <GavelSVG className="w-[110px] h-[100px] text-[#d4af37]" /> : (
+            <Image 
+              src="/images/logo.png" 
+              alt="Logo" 
+              width={110} 
+              height={100} 
+              className="object-contain"
+              onError={() => setLogoError(true)} 
+            />
+          )}
+          <div className="flex flex-col ml-[-25px]">
+            <span className="text-[18px] font-semibold text-white tracking-[-0.3px] leading-none">NyayaSetu</span>
+            <span className="text-[11px] text-[#d4af37] leading-none tracking-[1.5px] uppercase mt-2">न्यायसेतु</span>
           </div>
         </div>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-[60px]">
           <button onClick={() => scrollToSection('features')} className="text-[13px] text-white/45 hover:text-white transition-colors">Features</button>
           <button onClick={() => scrollToSection('how-it-works')} className="text-[13px] text-white/45 hover:text-white transition-colors">How it Works</button>
           <button onClick={() => scrollToSection('roadmap')} className="text-[13px] text-white/45 hover:text-white transition-colors">Security</button>
@@ -206,7 +211,7 @@ export default function LandingPage() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="fixed top-[60px] left-0 w-full bg-[#06111f]/95 backdrop-blur-xl border-b border-[#d4af37]/10 z-[80] flex flex-col p-6 gap-6 md:hidden">
+        <div className="fixed top-[64px] left-0 w-full bg-[#06111f]/95 backdrop-blur-xl border-b border-[#d4af37]/10 z-[80] flex flex-col p-6 gap-6 md:hidden">
           <button onClick={() => scrollToSection('features')} className="text-left text-lg text-white/80">Features</button>
           <button onClick={() => scrollToSection('how-it-works')} className="text-left text-lg text-white/80">How it Works</button>
           <button onClick={() => scrollToSection('roadmap')} className="text-left text-lg text-white/80">Security</button>
@@ -219,8 +224,11 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* LAYER 3 — HERO SECTION */}
-      <header className="relative w-full min-h-[100dvh] flex flex-col md:flex-row items-center pt-24 pb-12 z-10 overflow-hidden">
+      {/* LAYER 3 — HERO SECTION (FIX 4, 6) */}
+      <header className="relative w-full min-h-[100dvh] flex flex-col md:flex-row items-center pt-24 pb-[120px] z-[20] bg-transparent" style={{
+        maskImage: 'linear-gradient(to bottom, black 0%, black 85%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 85%, transparent 100%)'
+      }}>
 
         {/* LEFT CONTENT */}
         <div className="w-full md:w-1/2 flex flex-col items-start px-8 md:pl-16 lg:pl-24 z-20 animate-fade-in mt-8 md:mt-0">
@@ -272,56 +280,50 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* CENTER-RIGHT COMPOSITION */}
-        <div className="relative w-full md:w-1/2 h-[500px] md:h-full flex items-center justify-center mt-12 md:mt-0 z-10 pointer-events-none">
-          <div className="relative w-[360px] md:w-[480px] flex flex-col items-center justify-center translate-y-[12%]">
+        {/* EMBLEM COMPOSITION (FIX 2, 3, 6) */}
+        <div className="absolute left-[55%] top-1/2 -translate-y-1/2 flex flex-col items-center gap-0 z-[3] pointer-events-none scale-90 md:scale-100">
+          
+          {/* Ashoka Chakra (FIX 1) */}
+          <div className="relative z-[3] mb-1">
+            <AshokaChakraSVG className="w-[160px] h-[160px] text-[#d4af37]/40" />
+          </div>
 
-            <div className="absolute top-[-35px] left-1/2 -translate-x-1/2 w-[200px] h-[200px] z-20">
-              <AshokaChakraSVG className="w-full h-full text-[#d4af37]/40" />
-            </div>
-
-            <div className="relative z-10 w-full h-full flex items-center justify-center" style={{
-              filter: 'drop-shadow(0 0 60px rgba(212,175,55,0.4)) drop-shadow(0 0 120px rgba(212,175,55,0.15))'
-            }}>
-              {emblemError ? (
-                <EmblemFallbackSVG className="w-[480px] h-[480px] text-[#d4af37]" />
-              ) : (
+          {/* National Emblem Wrapper (FIX 1) */}
+          <div className="relative z-[2] flex flex-col items-center" style={{
+            filter: 'drop-shadow(0 0 60px rgba(212,175,55,0.4)) drop-shadow(0 0 120px rgba(212,175,55,0.15))'
+          }}>
+            {emblemError ? (
+              <EmblemFallbackSVG className="w-[380px] h-[380px] text-[#d4af37]" />
+            ) : (
+              <div style={{ background: 'transparent', mixBlendMode: 'lighten' }}>
                 <Image
                   src="/images/national-emblem.png"
                   alt="National Emblem of India"
-                  width={480}
-                  height={480}
-                  className="object-contain brightness-110"
+                  width={380}
+                  height={380}
+                  className="object-contain brightness-[1.1] contrast-[1.05]"
+                  style={{ background: 'transparent', mixBlendMode: 'lighten' }}
                   priority
                   onError={() => setEmblemError(true)}
                 />
-              )}
-            </div>
-          </div>
+              </div>
+            )}
 
-          {/* VIGNETTES */}
-          <div className="absolute inset-y-0 left-0 w-[55%] bg-gradient-to-r from-[#06111f] via-[#06111f]/85 to-transparent z-[4]" />
-          <div className="absolute inset-y-0 right-0 w-[20%] bg-gradient-to-l from-[#06111f] to-transparent z-[4]" />
-          <div className="absolute bottom-0 inset-x-0 h-[200px] bg-gradient-to-t from-[#06111f] to-transparent z-[6]" />
-
-          <div className="absolute bottom-12 right-12 z-20 flex items-center gap-3">
-            <div className="w-[3px] h-[22px] flex flex-col">
-              <div className="flex-1 bg-[#FF9933]" />
-              <div className="flex-1 bg-[#f0ead6]" />
-              <div className="flex-1 bg-[#138808]" />
-            </div>
-            <span className="text-[9px] text-white/20 tracking-[2.5px] font-medium">JAI HIND · सत्यमेव जयते</span>
           </div>
         </div>
+
+        {/* VIGNETTES (REFINED FOR SIDE BLENDING ONLY) */}
+        <div className="absolute inset-y-0 left-0 w-[55%] bg-gradient-to-r from-[#06111f] via-[#06111f]/40 to-transparent z-[5]" />
+        <div className="absolute inset-y-0 right-0 w-[20%] bg-gradient-to-l from-[#06111f] via-[#06111f]/20 to-transparent z-[5]" />
 
         <div className="absolute bottom-8 left-8 md:left-16 lg:left-24 z-20 flex items-center gap-4">
           <div className="w-7 h-[1px] bg-[#d4af37]" />
-          <span className="text-[9px] text-white/20 tracking-[2.5px] font-medium">SCROLL TO EXPLORE</span>
+          <span className="text-[9px] text-white/20 tracking-[2.5px] font-medium uppercase">Scroll to explore</span>
         </div>
       </header>
 
-      {/* LAYER 4 — FEATURES SECTION */}
-      <section id="features" className="w-full px-8 md:px-16 lg:px-24 py-20 md:py-24 relative z-20 bg-[#06111f]">
+      {/* LAYER 4 — FEATURES SECTION (FIX 4) */}
+      <section id="features" className="relative w-full px-8 md:px-16 lg:px-24 py-20 md:py-24 z-[20] bg-transparent mt-[-1px]">
         <div className="mb-14">
           <p className="text-[10px] text-[#d4af37] tracking-[3px] font-medium mb-3">WHAT WE DO</p>
           <h2 className="text-[32px] font-semibold text-white tracking-[-0.8px] mb-4">
@@ -353,8 +355,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* LAYER 5 — HOW IT WORKS */}
-      <section id="how-it-works" className="w-full bg-black/15 px-8 md:px-16 lg:px-24 py-20 md:py-28 relative z-20 border-y border-[#ffffff]/[0.02]">
+      {/* LAYER 5 — HOW IT WORKS (FIX 4) */}
+      <section id="how-it-works" className="relative w-full px-8 md:px-16 lg:px-24 py-20 md:py-28 z-[1]" style={{
+        background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.15) 10%, rgba(0,0,0,0.15) 90%, transparent 100%)'
+      }}>
         <div className="mb-16 md:mb-24 text-center md:text-left">
           <p className="text-[10px] text-[#d4af37] tracking-[3px] font-medium mb-3">WORKFLOW</p>
           <h2 className="text-[32px] font-semibold text-white tracking-[-0.8px]">
@@ -385,15 +389,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* LAYER 6 — BHAGAT SINGH QUOTE */}
-      <section className="w-full px-8 py-24 md:py-32 flex flex-col items-center justify-center text-center relative z-20">
+      {/* LAYER 6 — QUOTE SECTION (FIX 4, 6) */}
+      <section className="relative w-full px-8 py-24 md:py-32 flex flex-col items-center justify-center text-center z-[1] bg-transparent">
         <div className="absolute text-[120px] text-[#d4af37]/[0.04] font-serif leading-none -translate-y-8 select-none">"</div>
         <p className="text-[20px] md:text-[24px] italic text-white/55 max-w-[640px] leading-relaxed relative z-10 mb-8 font-serif">
-          "They may kill me, but they cannot kill my ideas. They can crush my body, but they will not be able to crush my spirit."
+          "Manpower without Unity is not a strength unless it is harmonized and united properly, then it becomes a spiritual power."
         </p>
         <div className="flex flex-col items-center gap-4">
           <span className="text-[11px] text-[#d4af37]/45 tracking-[2px] uppercase font-medium">
-            — SHAHEED BHAGAT SINGH · THE SPIRIT BEHIND NYAYASETU
+            — SARDAR VALLABHBHAI PATEL · THE IRON MAN OF INDIA
           </span>
           <div className="w-12 h-[3px] flex mt-2 opacity-50">
             <div className="flex-1 bg-[#FF9933]" />
@@ -403,8 +407,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* LAYER 7 — SECURITY ROADMAP */}
-      <section id="roadmap" className="w-full bg-[#d4af37]/[0.02] border-y border-[#d4af37]/[0.06] px-8 md:px-16 lg:px-24 py-20 md:py-24 relative z-20">
+      {/* LAYER 7 — SECURITY ROADMAP (FIX 4) */}
+      <section id="roadmap" className="relative w-full px-8 md:px-16 lg:px-24 py-20 md:py-24 z-[1]" style={{
+        background: 'linear-gradient(180deg, transparent 0%, rgba(212,175,55,0.025) 15%, rgba(212,175,55,0.025) 85%, transparent 100%)'
+      }}>
         <div className="mb-14">
           <h2 className="text-[28px] font-semibold text-white tracking-[-0.5px] mb-3">
             Built for Production. Designed for Trust.
@@ -467,11 +473,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* LAYER 8 — FINAL CTA */}
-      <section className="w-full bg-[#d4af37]/[0.03] border-t border-[#d4af37]/[0.08] px-8 py-24 md:py-32 flex flex-col items-center text-center relative z-20">
+      {/* LAYER 8 — FINAL CTA (FIX 4) */}
+      <section className="relative w-full px-8 py-24 md:py-32 flex flex-col items-center text-center z-[1] bg-transparent">
         <div className="mb-8 opacity-60">
-          {emblemError ? <GavelSVG className="w-12 h-12 text-[#d4af37]" /> : (
-            <Image src="/images/national-emblem.png" alt="Emblem" width={48} height={64} className="opacity-80" onError={() => setEmblemError(true)} />
+          {emblemError ? <GavelSVG className="w-56 h-56 text-[#d4af37]" /> : (
+            <Image src="/images/logo.png" alt="Logo" width={520} height={560} className="opacity-80 object-contain" onError={() => setEmblemError(true)} />
           )}
         </div>
         <h2 className="text-[36px] md:text-[42px] font-bold text-white tracking-[-1px] mb-4">
@@ -488,14 +494,19 @@ export default function LandingPage() {
         </button>
       </section>
 
-      {/* LAYER 9 — FOOTER */}
-      <footer className="w-full px-8 md:px-16 lg:px-24 py-10 border-t border-white/5 bg-[#06111f] relative z-20">
+      {/* LAYER 9 — FOOTER (FIX 4) */}
+      <footer className="relative w-full px-8 md:px-16 lg:px-24 py-10 bg-transparent z-[1] border-t border-white/5" style={{ borderTopWidth: '0.5px', borderTopColor: 'rgba(255,255,255,0.05)' }}>
+        {/* Tricolor Divider (FIX 4) */}
+        <div className="w-[120px] h-[2px] mx-auto mb-[40px]" style={{
+          background: 'linear-gradient(90deg, #FF9933 33%, #f0ead6 33% 66%, #138808 66%)'
+        }} />
+
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
-          <div className="flex items-center gap-3 opacity-50">
-            {logoError ? <GavelSVG className="w-6 h-6 text-[#d4af37]" /> : (
-              <Image src="/images/logo.png" alt="Logo" width={24} height={24} className="rounded-md" onError={() => setLogoError(true)} />
+          <div className="flex items-center gap-0 opacity-50">
+            {logoError ? <GavelSVG className="w-[50px] h-[50px] text-[#d4af37]" /> : (
+              <Image src="/images/logo.png" alt="Logo" width={50} height={50} className="rounded-md" onError={() => setLogoError(true)} />
             )}
-            <span className="text-[14px] font-semibold tracking-tight text-white">NyayaSetu</span>
+            <span className="text-[14px] font-semibold tracking-tight text-white ml-[-5px]">NyayaSetu</span>
           </div>
           <div className="flex gap-6">
             {['Privacy', 'Terms', 'Contact', 'About'].map(l => (

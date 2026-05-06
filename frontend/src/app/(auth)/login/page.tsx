@@ -12,7 +12,7 @@ type Role = 'admin' | 'reviewer' | 'officer';
 
 export default function LoginPage() {
   const router = useRouter();
-  
+
   const [selectedRole, setSelectedRole] = useState<Role>('admin');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [nicSsoId, setNicSsoId] = useState('');
@@ -32,7 +32,7 @@ export default function LoginPage() {
       setError('Please fill all fields');
       return;
     }
-    
+
     setIsLoading(true);
     try {
       const generatedOTP = OTPStore.generate();
@@ -55,7 +55,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#06111f] flex flex-col md:flex-row relative overflow-hidden font-sans text-white">
-      
+
       {/* TRICOLOR BAR */}
       <div className="fixed top-0 left-0 w-full h-1 flex z-[100]">
         <div className="flex-1 bg-[#FF9933]" />
@@ -68,7 +68,7 @@ export default function LoginPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-12 h-12 flex items-center justify-center">
-              <Image src="/images/logo.png" alt="Logo" width={48} height={48} className="object-contain" />
+              <Image src="/images/logo.png" alt="Logo" width={148} height={148} className="object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="text-2xl font-bold tracking-tight leading-none">NyayaSetu</span>
@@ -79,7 +79,7 @@ export default function LoginPage() {
 
         <div className="max-w-xl">
           <h2 className="text-[52px] font-bold leading-[1.1] tracking-tight mb-8">
-            Court orders to <br/>
+            Court orders to <br />
             <span className="text-[#d4af37]">verified action.</span>
           </h2>
           <p className="text-[15px] text-white/40 mb-12 leading-relaxed max-w-md">
@@ -90,9 +90,9 @@ export default function LoginPage() {
 
           <div className="pl-6 border-l border-[#d4af37]/30 mb-16">
             <p className="text-[17px] italic text-white/50 mb-4 font-serif leading-relaxed">
-              "They may kill me, but they cannot kill my ideas. They can crush my body, but they will not be able to crush my spirit."
+              "Dream, Dream, Dream. Dreams transform into thoughts and thoughts result in action."
             </p>
-            <p className="text-[11px] font-bold text-[#d4af37] tracking-[2px] uppercase">— SHAHEED BHAGAT SINGH</p>
+            <p className="text-[11px] font-bold text-[#d4af37] tracking-[2px] uppercase">— DR. APJ ABDUL KALAM · MISSILE MAN OF INDIA</p>
           </div>
 
           <div className="flex gap-16">
@@ -115,14 +115,14 @@ export default function LoginPage() {
       {/* RIGHT PANEL (LOGIN CARD) */}
       <div className="w-full md:w-[42%] flex items-center justify-center p-8 lg:p-12 relative z-10">
         <div className="w-full max-w-[440px] bg-[#0a1828]/60 backdrop-blur-2xl border border-white/5 rounded-[32px] p-10 lg:p-12 shadow-2xl relative overflow-hidden">
-          
+
           <div className="flex flex-col items-center mb-10">
             <div className="w-[80px] h-[100px] relative mb-6">
-              <Image 
-                src="/images/national-emblem.png" 
-                alt="Emblem" 
-                fill 
-                className="object-contain brightness-110" 
+              <Image
+                src="/images/national-emblem.png"
+                alt="Emblem"
+                fill
+                className="object-contain brightness-110"
               />
             </div>
             <div className="text-[#d4af37] text-[10px] font-bold tracking-[4px] uppercase mb-6">सत्यमेव जयते</div>
@@ -131,7 +131,7 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSendOTP} className="space-y-6">
-            
+
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-white/20 uppercase tracking-[2px]">Access Type</label>
               <div className="relative">
@@ -200,11 +200,11 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center group cursor-pointer" onClick={() => {/* Toggle state logic if needed */}}>
+            <div className="flex items-center group cursor-pointer" onClick={() => {/* Toggle state logic if needed */ }}>
               <div className="relative flex items-center justify-center">
-                <input 
-                  type="checkbox" 
-                  className="peer h-4 w-4 rounded border-white/10 bg-white/5 text-[#d4af37] focus:ring-offset-0 focus:ring-0 appearance-none cursor-pointer transition-all checked:bg-[#d4af37] checked:border-[#d4af37]" 
+                <input
+                  type="checkbox"
+                  className="peer h-4 w-4 rounded border-white/10 bg-white/5 text-[#d4af37] focus:ring-offset-0 focus:ring-0 appearance-none cursor-pointer transition-all checked:bg-[#d4af37] checked:border-[#d4af37]"
                 />
                 <CheckCircle size={10} className="absolute text-[#06111f] opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
               </div>
@@ -221,7 +221,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 pt-8 border-t border-white/5 flex justify-center">
-             <span className="text-[9px] text-white/10 tracking-[3px] uppercase">सत्यमेव जयते</span>
+            <span className="text-[9px] text-white/10 tracking-[3px] uppercase">सत्यमेव जयते</span>
           </div>
         </div>
       </div>
