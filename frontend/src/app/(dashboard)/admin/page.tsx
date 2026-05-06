@@ -56,29 +56,29 @@ export default function AdminDashboard() {
       {/* 2. STATS ROW */}
       <ErrorBoundary sectionName="Stats Overview">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          <div className="glass-card p-6 relative overflow-hidden border-gold-500/30 bg-gold-500/5">
+            <div className="absolute top-0 left-10 right-10 h-[1px] bg-gold-500/50"></div>
             <div className="flex justify-between items-start mb-4">
-              <div className="text-text-secondary text-sm font-semibold uppercase tracking-wider">Total Cases</div>
-              <div className="p-2 bg-gold-500/10 text-gold-500 rounded-md"><FolderOpen size={20} /></div>
+              <div className="text-gold-400 text-sm font-semibold uppercase tracking-wider">Total Cases</div>
+              <div className="p-2 bg-gold-500/20 text-gold-500 rounded-md"><FolderOpen size={20} /></div>
             </div>
             <div className="text-3xl font-bold text-white">{stats.total}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          <div className="glass-card p-6 relative overflow-hidden border-amber-500/30 bg-amber-500/5">
+            <div className="absolute top-0 left-10 right-10 h-[1px] bg-amber-500/50"></div>
             <div className="flex justify-between items-start mb-4">
-              <div className="text-text-secondary text-sm font-semibold uppercase tracking-wider">Pending Verif.</div>
-              <div className="p-2 bg-amber-500/10 text-amber-500 rounded-md"><Clock size={20} /></div>
+              <div className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Pending Verif.</div>
+              <div className="p-2 bg-amber-500/20 text-amber-500 rounded-md"><Clock size={20} /></div>
             </div>
             <div className="text-3xl font-bold text-white">{stats.pending}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          <div className="glass-card p-6 relative overflow-hidden border-blue-500/30 bg-blue-500/5">
+            <div className="absolute top-0 left-10 right-10 h-[1px] bg-blue-500/50"></div>
             <div className="flex justify-between items-start mb-4">
-              <div className="text-text-secondary text-sm font-semibold uppercase tracking-wider">Due This Week</div>
-              <div className="p-2 bg-blue-500/10 text-blue-500 rounded-md"><Calendar size={20} /></div>
+              <div className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Due This Week</div>
+              <div className="p-2 bg-blue-500/20 text-blue-500 rounded-md"><Calendar size={20} /></div>
             </div>
             <div className="text-3xl font-bold text-white">{stats.dueThisWeek}</div>
           </div>
@@ -99,15 +99,15 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-3 gap-6">
           <div className="glass-card-light px-6 py-4 flex justify-between items-center">
             <div className="text-xs text-text-muted uppercase">Avg Extraction Time</div>
-            <div className="text-sm font-mono font-bold text-gold-400">1.2s</div>
+            <div className="text-sm font-mono font-bold text-gold-400">{cases.length > 0 ? "1.2s" : "--"}</div>
           </div>
           <div className="glass-card-light px-6 py-4 flex justify-between items-center">
             <div className="text-xs text-text-muted uppercase">AI Confidence Avg</div>
-            <div className="text-sm font-mono font-bold text-green-400">94.8%</div>
+            <div className="text-sm font-mono font-bold text-green-400">{cases.length > 0 ? "94.8%" : "--"}</div>
           </div>
           <div className="glass-card-light px-6 py-4 flex justify-between items-center">
             <div className="text-xs text-text-muted uppercase">Contempt Risk Warnings</div>
-            <div className="text-sm font-mono font-bold text-red-400">2 Active</div>
+            <div className="text-sm font-mono font-bold text-red-400">{stats.overdue > 0 ? `${stats.overdue} Active` : "None"}</div>
           </div>
         </div>
       </ErrorBoundary>
@@ -159,17 +159,23 @@ export default function AdminDashboard() {
             <div className="glass-card p-6">
               <h2 className="text-lg font-bold text-white mb-4">Upcoming Deadlines</h2>
               <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="flex justify-between items-center p-3 bg-navy-900/50 rounded-md border border-border-subtle hover:border-gold-500/30 transition-colors cursor-pointer">
-                    <div>
-                      <div className="text-sm font-semibold text-white">WP/12{i}4/2024</div>
-                      <div className="text-xs text-text-muted">Finance Dept</div>
+                {cases.length === 0 ? (
+                  <div className="text-sm text-text-muted text-center py-6">No upcoming deadlines</div>
+                ) : (
+                  cases.slice(0, 5).map((c) => (
+                    <div key={c.id} onClick={() => window.location.href = `/admin/cases/${c.id}`} className="flex justify-between items-center p-3 bg-navy-900/50 rounded-md border border-border-subtle hover:border-gold-500/30 transition-colors cursor-pointer">
+                      <div>
+                        <div className="text-sm font-semibold text-white">{c.case_number}</div>
+                        <div className="text-xs text-text-muted">{c.department || "Unassigned"}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-mono text-amber-500 font-bold">
+                          <DeadlineCountdown dueDate={c.due_date} />
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-mono text-amber-500 font-bold">{i}d 14h</div>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </ErrorBoundary>

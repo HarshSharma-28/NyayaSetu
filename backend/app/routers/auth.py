@@ -91,7 +91,7 @@ async def send_otp(request: Request, body: SendOTPRequest):
             "sso_id": body.nic_sso_id,
             "otp_code": otp,
             "expires_at": (datetime.now(timezone.utc).replace(microsecond=0) + 
-                          timezone.timedelta(minutes=5)).isoformat()
+                          __import__('datetime').timedelta(minutes=5)).isoformat()
         }, on_conflict="sso_id").execute()
 
         # Send Email

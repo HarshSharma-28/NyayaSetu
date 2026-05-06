@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Search, Bell } from 'lucide-react';
 import { Session } from '@/lib/auth/session';
+import { api } from '@/lib/api/client';
 
 export function TopNav() {
   const pathname = usePathname();
@@ -18,8 +19,27 @@ export function TopNav() {
   const session = Session.get();
   const [mounted, setMounted] = useState(false);
   
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
     setMounted(true);
+    // Fetch real notifications
+    api.notifications.list(true)
+      .then(res => {
+        const data = (res as any).items || (res as any).data || res;
+        setUnreadCount(Array.isArray(data) ? data.length : 0);
+      })
+      .catch(err => console.error("Notifications fetch failed:", err));
+
+    function handleClickOutside(event: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const initials = mounted && session?.nicSsoId ? session.nicSsoId.substring(0, 2).toUpperCase() : 'AD';
@@ -61,12 +81,38 @@ export function TopNav() {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-6">
-        <button className="relative text-text-muted hover:text-white transition-colors">
-          <Bell size={22} />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-navy-900">
-            3
-          </span>
-        </button>
+        <div className="relative" ref={notifRef}>
+          <button 
+            className="relative text-text-muted hover:text-white transition-colors"
+            onClick={() => setIsNotifOpen(!isNotifOpen)}
+          >
+            <Bell size={22} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-navy-900">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {isNotifOpen && (
+            <div className="absolute top-full right-0 mt-4 w-80 bg-navy-900 border border-border-default rounded-xl shadow-2xl z-50 overflow-hidden animate-fade-in">
+              <div className="px-4 py-3 border-b border-border-subtle bg-navy-950/50 flex justify-between items-center">
+                <span className="text-sm font-bold text-white">Notifications</span>
+                {unreadCount > 0 && <span className="text-xs text-gold-400 cursor-pointer hover:text-gold-300">Mark all read</span>}
+              </div>
+              <div className="p-4 flex flex-col items-center justify-center min-h-[120px]">
+                {unreadCount > 0 ? (
+                  <span className="text-sm text-text-secondary">You have {unreadCount} new notification(s).</span>
+                ) : (
+                  <>
+                    <Bell size={32} className="text-text-muted/30 mb-2" />
+                    <span className="text-sm text-text-muted">No new notifications</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-3 border-l border-border-subtle pl-6">
           <div className="text-right hidden md:block">

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { IMAGES, getImageWithFallback } from '@/lib/images/image-loader';
 import { OTPStore } from '@/lib/auth/otp-store';
 import { Session } from '@/lib/auth/session';
-
+import { api } from '@/lib/api/client';
 export default function OTPPage() {
   const router = useRouter();
   
@@ -60,31 +60,33 @@ export default function OTPPage() {
     setIsVerifying(true);
     setErrorMsg(null);
 
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 1000));
+    try {
+      // Hit real backend
+      const response = await api.auth.login({
+        nic_sso_id: nicId,
+        password: 'dummy', // password is not strictly checked since OTP handles auth
+        role: role,
+        otp: enteredString
+      });
 
-    if (enteredString === demoOTP) {
       // Success
       Session.save({
         nicSsoId: nicId,
         role: role as any,
-        loginTime: Date.now()
+        loginTime: Date.now(),
+        token: (response as any).access_token
       });
       OTPStore.clear(); // cleanup
       
-      // Route based on role
-      try {
-        if (role === 'admin') router.push('/admin');
-        else if (role === 'reviewer') router.push('/reviewer');
-        else router.push('/officer');
-      } catch (e) {
-        showToast('Navigation failed. Refresh page.');
-      }
-    } else {
+      if (role === 'admin') router.push('/admin');
+      else if (role === 'reviewer') router.push('/reviewer');
+      else router.push('/officer');
+
+    } catch (err: any) {
       // Failure
       setIsVerifying(false);
       setIsErrorShake(true);
-      setErrorMsg('Incorrect OTP. Please try again.');
+      setErrorMsg(err.message || 'Incorrect OTP. Please try again.');
       setOtpValues(Array(6).fill(''));
       inputRefs.current[0]?.focus();
       

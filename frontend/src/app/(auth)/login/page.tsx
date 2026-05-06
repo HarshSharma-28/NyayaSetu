@@ -9,6 +9,7 @@ import { OTPStore } from '@/lib/auth/otp-store';
 import { supabase } from '@/lib/supabase/client';
 
 type Role = 'admin' | 'reviewer' | 'officer';
+import { api } from '@/lib/api/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,20 +36,16 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const generatedOTP = OTPStore.generate();
-      OTPStore.save(generatedOTP, selectedRole, nicSsoId);
+      const res = await api.auth.sendOTP(nicSsoId);
+      
+      // Save info locally. In demo mode, backend returns the OTP so we can auto-fill or log it.
+      const returnedOTP = (res as any).otp || '';
+      OTPStore.save(returnedOTP, selectedRole, nicSsoId);
 
-      // Demo auto-upsert to Supabase
-      await supabase.from('users').upsert({
-        nic_sso_id: nicSsoId,
-        role: selectedRole,
-        full_name: `User_${nicSsoId}`,
-        is_active: true
-      }, { onConflict: 'nic_sso_id' });
-
-      setTimeout(() => router.push('/otp'), 1000);
-    } catch (err) {
-      setError('Authentication failed. Please check credentials.');
+      router.push('/otp');
+    } catch (err: any) {
+      console.error('Login Error:', err);
+      setError(err.message || 'Authentication failed. Please check credentials.');
       setIsLoading(false);
     }
   };
