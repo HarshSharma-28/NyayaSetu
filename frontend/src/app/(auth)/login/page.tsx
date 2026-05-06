@@ -56,6 +56,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#06111f] flex flex-col md:flex-row relative overflow-hidden font-sans text-white">
 
+      {/* LAYER 0 — FIXED BACKGROUND (DOT GRID) */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
+        <div className="absolute inset-0 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:32px_32px]" />
+      </div>
+
       {/* TRICOLOR BAR */}
       <div className="fixed top-0 left-0 w-full h-1 flex z-[100]">
         <div className="flex-1 bg-[#FF9933]" />
@@ -66,13 +71,17 @@ export default function LoginPage() {
       {/* LEFT PANEL */}
       <div className="hidden md:flex flex-col justify-between w-[58%] p-16 lg:p-24 relative z-10">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-12 h-12 flex items-center justify-center">
-              <Image src="/images/logo.png" alt="Logo" width={148} height={148} className="object-contain" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold tracking-tight leading-none">NyayaSetu</span>
-              <span className="text-[11px] text-[#d4af37] tracking-[3px] uppercase mt-1">न्यायसेतु</span>
+          <div className="flex items-center gap-0 mb-2">
+            <Image 
+              src="/images/logo.png" 
+              alt="Logo" 
+              width={256} 
+              height={256} 
+              className="object-contain ml-[-90px]" 
+            />
+            <div className="flex flex-col ml-[-50px]">
+              <span className="text-[64px] font-bold tracking-tight leading-none text-white">NyayaSetu</span>
+              <span className="text-[54px] text-[#d4af37] tracking-[2px] uppercase mt-3">न्यायसेतु</span>
             </div>
           </div>
         </div>
@@ -117,7 +126,7 @@ export default function LoginPage() {
         <div className="w-full max-w-[440px] bg-[#0a1828]/60 backdrop-blur-2xl border border-white/5 rounded-[32px] p-10 lg:p-12 shadow-2xl relative overflow-hidden">
 
           <div className="flex flex-col items-center mb-10">
-            <div className="w-[80px] h-[100px] relative mb-6">
+            <div className="w-[180px] h-[200px] relative mb-2">
               <Image
                 src="/images/national-emblem.png"
                 alt="Emblem"
@@ -125,7 +134,6 @@ export default function LoginPage() {
                 className="object-contain brightness-110"
               />
             </div>
-            <div className="text-[#d4af37] text-[10px] font-bold tracking-[4px] uppercase mb-6">सत्यमेव जयते</div>
             <h3 className="text-2xl font-bold text-white mb-2">Welcome back</h3>
             <p className="text-[12px] text-white/30 tracking-tight">Sign in to NyayaSetu — Bridge of Justice</p>
           </div>
@@ -228,8 +236,9 @@ export default function LoginPage() {
 
       {/* VIGNETTE & BLURS */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#FF9933]/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#138808]/5 blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#FF9933]/10 blur-[140px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#138808]/10 blur-[140px] rounded-full" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#06111f] via-transparent to-[#06111f]/60" />
       </div>
     </div>
   );
