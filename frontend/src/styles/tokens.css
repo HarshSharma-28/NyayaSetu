@@ -1,0 +1,124 @@
+:root {
+  /* ── BRAND COLORS ── */
+  --navy-950: #020d1a;
+  --navy-900: #06111f;
+  --navy-800: #0a1828;
+  --navy-700: #0d1f35;
+  --navy-600: #112644;
+  --navy-500: #1a3455;
+
+  --gold-400: #fbbf24;
+  --gold-500: #d4af37;
+  --gold-600: #c9a227;
+  --gold-700: #b8920f;
+  --gold-glow: rgba(212, 175, 55, 0.15);
+  --gold-subtle: rgba(212, 175, 55, 0.06);
+
+  --saffron: #FF9933;
+  --india-green: #138808;
+  --cream: #f0ead6;
+
+  --red-500: #dc2626;
+  --red-400: #f87171;
+  --red-glow: rgba(220, 38, 38, 0.12);
+
+  --amber-500: #f59e0b;
+  --amber-400: #fbbf24;
+  --green-500: #16a34a;
+  --green-400: #4ade80;
+  --blue-500: #2563eb;
+  --purple-500: #7c3aed;
+
+  /* ── SURFACES ── */
+  --surface-base: #06111f;
+  --surface-raised: #0a1828;
+  --surface-card: #0d1f35;
+  --surface-overlay: rgba(13, 31, 53, 0.95);
+  --surface-glass: rgba(13, 31, 53, 0.6);
+  --surface-glass-light: rgba(255, 255, 255, 0.04);
+
+  /* ── BORDERS ── */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-gold: rgba(212, 175, 55, 0.2);
+  --border-gold-strong: rgba(212, 175, 55, 0.4);
+
+  /* ── TEXT ── */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --text-gold: #d4af37;
+  --text-placeholder: rgba(255, 255, 255, 0.2);
+
+  /* ── GRADIENTS ── */
+  --gradient-gold: linear-gradient(135deg, #d4af37 0%, #fbbf24 50%, #d4af37 100%);
+  --gradient-navy: linear-gradient(135deg, #06111f 0%, #0d1f35 100%);
+  --gradient-card: linear-gradient(145deg, rgba(13,31,53,0.9) 0%, rgba(6,17,31,0.95) 100%);
+  --gradient-aurora: linear-gradient(
+    135deg,
+    rgba(212,175,55,0.08) 0%,
+    rgba(19,136,8,0.04) 30%,
+    rgba(255,153,51,0.04) 60%,
+    rgba(212,175,55,0.08) 100%
+  );
+  --gradient-glow-gold: radial-gradient(
+    ellipse at center,
+    rgba(212,175,55,0.2) 0%,
+    rgba(212,175,55,0.05) 40%,
+    transparent 70%
+  );
+
+  /* ── GLASSMORPHISM ── */
+  --glass-bg: rgba(13, 31, 53, 0.55);
+  --glass-border: rgba(212, 175, 55, 0.15);
+  --glass-blur: blur(16px);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  /* ── FROSTED GLASS (lighter) ── */
+  --frost-bg: rgba(255, 255, 255, 0.03);
+  --frost-border: rgba(255, 255, 255, 0.08);
+  --frost-blur: blur(12px);
+
+  /* ── SHADOWS ── */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --shadow-gold: 0 0 20px rgba(212,175,55,0.2);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4),
+                 inset 0 1px 0 rgba(255,255,255,0.04);
+
+  /* ── BORDER RADIUS ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* ── SPACING ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── TYPOGRAPHY ── */
+  --font-sans: 'Inter', 'Segoe UI', sans-serif;
+  --font-display: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── Z-INDEX ── */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sidebar: 30;
+  --z-navbar: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+}

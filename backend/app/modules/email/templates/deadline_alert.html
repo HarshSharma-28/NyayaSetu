@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NyayaSetu Deadline Alert</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Urgency Header -->
+                    <tr>
+                        <td bgcolor="#d97706" style="padding: 15px 40px; text-align: center;">
+                            <span style="color: #ffffff; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">⚠️ $URGENCY ALERT — ACTION REQUIRED</span>
+                        </td>
+                    </tr>
+                    <!-- Main Header -->
+                    <tr>
+                        <td bgcolor="#06111f" style="padding: 25px 40px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td style="color: #ffffff; font-size: 24px; font-weight: bold;">
+                                        NyayaSetu <span style="font-weight: normal; color: #d4af37;">न्यायसेतु</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; font-size: 16px; color: #333333;">Dear $NAME,</p>
+                            <p style="margin: 0 0 25px; font-size: 16px; color: #333333; line-height: 1.5;">This is a formal notification regarding an upcoming compliance deadline for a judicial directive assigned to your department.</p>
+                            
+                            <table border="0" cellpadding="15" cellspacing="0" width="100%" style="background-color: #f9f9f9; border-left: 4px solid #d4af37; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="font-size: 14px; color: #666666;">
+                                        <strong style="color: #06111f;">Case Number:</strong> $CASE_NUMBER<br>
+                                        <strong style="color: #06111f;">Compliance Due:</strong> $DUE_DATE<br>
+                                        <strong style="color: #06111f;">Time Remaining:</strong> <span style="color: #d97706; font-weight: bold;">$DAYS_LEFT days</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Conditional Red Box for Critical Urgency -->
+                            <table border="0" cellpadding="15" cellspacing="0" width="100%" style="margin-bottom: 30px; border: 1px solid #ef4444; background-color: #fef2f2; border-radius: 8px;">
+                                <tr>
+                                    <td style="font-size: 14px; color: #b91c1c; line-height: 1.4;">
+                                        <strong>CRITICAL:</strong> Potential contempt of court risk if compliance is not recorded before the deadline. Please ensure all actions are updated in the system immediately.
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <div style="text-align: center;">
+                                <a href="${settings.FRONTEND_URL}/dashboard" style="display: inline-block; background-color: #d4af37; color: #06111f; padding: 14px 30px; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Open NyayaSetu Dashboard →</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td bgcolor="#f5f5f5" style="padding: 30px 40px; text-align: center; border-top: 1px solid #eeeeee;">
+                            <p style="margin: 0 0 10px; color: #d4af37; font-size: 18px; font-weight: bold;">सत्यमेव जयते</p>
+                            <p style="margin: 0 0 5px; color: #06111f; font-size: 14px; font-weight: bold;">NyayaSetu — Bridge of Justice</p>
+                            <p style="margin: 0 0 15px; color: #666666; font-size: 12px;">Government Judicial Compliance & Monitoring Platform</p>
+                            <p style="margin: 0; color: #999999; font-size: 11px;">This is an automated system message. Please do not reply.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

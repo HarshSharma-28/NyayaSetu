@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import './tokens.css';
+@import './glassmorphism.css';
+@import './animations.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--surface-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(212,175,55,0.25);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212,175,55,0.4);
+}
+
+/* Selection */
+::selection {
+  background: rgba(212,175,55,0.25);
+  color: #fff;
+}
+
+/* Input autofill fix */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--navy-700) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+/* Tricolor bar */
+.tricolor-bar {
+  width: 100%;
+  height: 4px;
+  display: flex;
+}
+.tricolor-bar > :nth-child(1) { flex: 1; background: #FF9933; }
+.tricolor-bar > :nth-child(2) { flex: 1; background: #f0ead6; }
+.tricolor-bar > :nth-child(3) { flex: 1; background: #138808; }
