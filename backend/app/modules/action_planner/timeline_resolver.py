@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import re
-from typing import dict, Optional
+from typing import Dict, Optional
 
 class TimelineResolver:
     """

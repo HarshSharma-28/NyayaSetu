@@ -9,22 +9,24 @@ import { FolderOpen, Clock, Calendar, AlertTriangle, ArrowRight } from 'lucide-r
 import { api } from '@/lib/api/client';
 import Link from 'next/link';
 
-// Mock data to prevent API errors in prototype if backend is down
-const MOCK_CASES = [
-  { id: '1', case_number: 'WP/1234/2024', court_name: 'Supreme Court', department: 'Finance', priority: 'CRITICAL', status: 'IN_REVIEW', due_date: new Date(Date.now() + 86400000).toISOString() },
-  { id: '2', case_number: 'SLP/552/2023', court_name: 'Bombay High Court', department: 'Revenue', priority: 'HIGH', status: 'PENDING', due_date: new Date(Date.now() + 432000000).toISOString() },
-  { id: '3', case_number: 'PIL/99/2024', court_name: 'Delhi High Court', department: 'Health', priority: 'MEDIUM', status: 'VERIFIED', due_date: new Date(Date.now() + 1296000000).toISOString() },
-];
-
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ total: 142, pending: 38, dueThisWeek: 12, overdue: 3 });
-  const [cases, setCases] = useState<any[]>(MOCK_CASES);
-  const [isLoading, setIsLoading] = useState(false);
+  const [stats, setStats] = useState({ total: 0, pending: 0, dueThisWeek: 0, overdue: 0 });
+  const [cases, setCases] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    // api.dashboard.stats().then(setStats).catch(console.error);
-    // api.cases.list().then(res => setCases(res.data)).catch(console.error);
+    // Fetch real data from the NyayaSetu backend
+    api.dashboard.stats()
+      .then(res => setStats(res as any))
+      .catch(err => console.error("Stats fetch failed:", err));
+      
+    api.cases.list()
+      .then(res => {
+        const data = (res as any).items || (res as any).data || res;
+        setCases(Array.isArray(data) ? data : []);
+      })
+      .catch(err => console.error("Cases fetch failed:", err))
+      .finally(() => setIsLoading(false));
   }, []);
 
   return (

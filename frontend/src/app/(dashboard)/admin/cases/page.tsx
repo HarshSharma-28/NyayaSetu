@@ -1,14 +1,28 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary';
 import { PriorityBadge } from '@/components/shared/PriorityBadge';
 import { Search, Filter, Download } from 'lucide-react';
 import Link from 'next/link';
+import { api } from '@/lib/api/client';
 
 export default function AdminCasesPage() {
   const [activeTab, setActiveTab] = useState('All');
   const tabs = ['All', 'Pending', 'In Review', 'Verified', 'Overdue'];
+  
+  const [cases, setCases] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.cases.list()
+      .then(res => {
+        const data = (res as any).items || (res as any).data || res;
+        setCases(Array.isArray(data) ? data : []);
+      })
+      .catch(err => console.error("Cases fetch failed:", err))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <ErrorBoundary sectionName="Cases Full List">
@@ -74,25 +88,33 @@ export default function AdminCasesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
-                {[1, 2, 3, 4, 5].map((item) => (
-                  <tr key={item} className="hover:bg-white/5 transition-colors">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-text-muted">Loading cases...</td>
+                  </tr>
+                ) : cases.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-text-muted">No cases found in the registry.</td>
+                  </tr>
+                ) : cases.map((item: any) => (
+                  <tr key={item.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gold-400">
-                      WP/202{item}/2024
+                      {item.case_number}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                      Ramesh Kumar vs State
+                      {item.petitioner || item.court_name || "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
-                      Revenue Department
+                      {item.department || "Unassigned"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <PriorityBadge priority={item % 2 === 0 ? 'HIGH' : 'CRITICAL'} />
+                      <PriorityBadge priority={item.priority || 'MEDIUM'} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-text-secondary">
-                      2024-12-{10 + item}
+                      {item.due_date ? new Date(item.due_date).toISOString().split('T')[0] : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link href={`/admin/cases/${item}`} className="text-gold-500 hover:text-gold-400">
+                      <Link href={`/admin/cases/${item.id}`} className="text-gold-500 hover:text-gold-400">
                         View Details →
                       </Link>
                     </td>
@@ -103,10 +125,10 @@ export default function AdminCasesPage() {
           </div>
           
           <div className="px-6 py-4 border-t border-border-subtle flex items-center justify-between bg-navy-900/30">
-            <span className="text-xs text-text-muted">Showing 1 to 5 of 142 cases</span>
+            <span className="text-xs text-text-muted">Showing {cases.length} cases</span>
             <div className="flex gap-2">
-              <button className="px-3 py-1 bg-navy-800 border border-border-default rounded text-xs text-text-muted disabled:opacity-50">Previous</button>
-              <button className="px-3 py-1 bg-navy-800 border border-border-default rounded text-xs text-white hover:bg-navy-700">Next</button>
+              <button className="px-3 py-1 bg-navy-800 border border-border-default rounded text-xs text-text-muted disabled:opacity-50" disabled>Previous</button>
+              <button className="px-3 py-1 bg-navy-800 border border-border-default rounded text-xs text-white hover:bg-navy-700 disabled:opacity-50" disabled>Next</button>
             </div>
           </div>
         </div>

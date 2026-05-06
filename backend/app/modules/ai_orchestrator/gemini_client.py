@@ -1,7 +1,7 @@
 import google.generativeai as genai
 import json
 import asyncio
-from typing import dict
+from typing import Dict
 from app.core.config import settings
 from app.core.logger import app_logger
 from app.core.exceptions.ai_exceptions import (

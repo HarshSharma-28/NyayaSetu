@@ -1,4 +1,4 @@
-from typing import List, dict
+from typing import List, Dict
 
 class DepartmentRouter:
     """

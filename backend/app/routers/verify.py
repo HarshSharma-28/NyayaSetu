@@ -16,7 +16,7 @@ from app.core.exceptions.directive_exceptions import (
     DirectiveRejectionReasonMissingException,
 )
 from app.core.exceptions.database_exceptions import DatabaseConnectionException
-from app.modules.email.mailer import send_deadline_alert
+from app.modules.email.mailer import email_service
 
 router = APIRouter(tags=["verification"])
 
@@ -102,7 +102,7 @@ async def approve_directive(directive_id: str, user: dict = Depends(get_reviewer
             # db.table("notifications").insert(notif_data).execute()
             
             # Send Email
-            send_deadline_alert(
+            email_service.send_deadline_alert(
                 to=officer["email"],
                 case_number=directive["cases"]["case_number"],
                 due_date=directive["compliance_deadline"],

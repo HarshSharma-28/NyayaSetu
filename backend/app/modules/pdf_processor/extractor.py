@@ -4,7 +4,7 @@ from PIL import Image
 import io
 import cv2
 import numpy as np
-from typing import dict, List
+from typing import Dict, List
 
 from app.core.exceptions.pdf_exceptions import (
     PDFCorruptedException,

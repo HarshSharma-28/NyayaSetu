@@ -224,7 +224,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full py-4 bg-[#d4af37] text-[#06111f] font-bold rounded-xl hover:bg-[#e8c84a] transition-all flex justify-center items-center gap-2 mt-4 shadow-lg shadow-[#d4af37]/10"
             >
-              {isLoading ? 'Authenticating...' : 'Send OTP'}
+              {isLoading ? 'Authenticating...' : 'Continue with OTP'}
             </button>
           </form>
 

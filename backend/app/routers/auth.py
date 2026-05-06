@@ -19,7 +19,7 @@ from app.core.exceptions.auth_exceptions import (
     RoleMismatchException,
 )
 from app.core.exceptions.database_exceptions import DatabaseConnectionException
-from app.modules.email.mailer import send_otp_email
+from app.modules.email.mailer import email_service
 
 router = APIRouter(tags=["auth"])
 
@@ -96,7 +96,7 @@ async def send_otp(request: Request, body: SendOTPRequest):
 
         # Send Email
         if not settings.DEMO_MODE:
-            send_otp_email(to=user.get("email", "admin@nyayasetu.gov.in"), otp=otp, name=user["full_name"])
+            email_service.send_otp(to=user.get("email", "admin@nyayasetu.gov.in"), otp=otp, name=user["full_name"])
         
         await log_audit(db, "otp_requested", user["id"], {"sso_id": body.nic_sso_id})
 
