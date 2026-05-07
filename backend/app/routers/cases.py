@@ -142,13 +142,13 @@ async def upload_case_pdf(
             "overall_nature": judgment_dna.get("overall_nature", "COMPLIANCE_REQUIRED"),
             "created_at": datetime.now(timezone.utc).isoformat()
         }
-        case_res = db.table("cases").insert(case_data).execute()
+        case_res = db.table("cases").insert(case_data).select().execute()
         new_case_id = case_res.data[0]["id"]
 
         # Insert Directives (Bulk)
         for d in directives_processed:
             d["case_id"] = new_case_id
-        db.table("directives").insert(directives_processed).execute()
+        db.table("directives").insert(directives_processed).select().execute()
 
         # Audit Log
         await log_audit(db, "case_processed_ai", user["user_id"], new_case_id, {"case_number": case_number})
