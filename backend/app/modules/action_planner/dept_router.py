@@ -53,6 +53,17 @@ class DepartmentRouter:
             "beneficiary", "tribal", "minority"
         ],
     }
+
+    DEPT_MAP = {
+        "Finance": "1ba0ea6c-7dff-4c88-a33c-7ef4c6a0b8a1",
+        "HR": "019cf500-e820-4f02-b763-91cd62c849f4",
+        "Revenue": "2398f890-186f-4777-a4d0-41a99c34540d",
+        "Legal Cell": "2cba4c79-dd07-4b08-a495-368e192645af",
+        "Public Works": "d7d3f9c1-e0b6-44c9-a2fb-f2c795b295e3",
+        "Health": "a694196b-6ab9-49a3-8290-943124b8af38",
+        "Education": "85a90a13-74ff-4417-9f1d-0f9d84d4d453",
+        "Social Welfare": "40f45359-3687-4ace-80db-7120ade21a20"
+    }
     
     def route(self, directive_text: str) -> List[dict]:
         """
@@ -86,4 +97,15 @@ class DepartmentRouter:
             reverse=True
         )
         
-        return sorted_matches[:2]
+    def route_directive(self, text: str, hint: str = None) -> str:
+        """
+        Syntactic sugar for cases.py - returns the top department's UUID.
+        """
+        matches = self.route(text)
+        top_dept_name = matches[0]["department"]
+        
+        if hint and any(m["department"].lower() == hint.lower() for m in matches):
+            top_dept_name = hint
+            
+        # Return the UUID from our map
+        return self.DEPT_MAP.get(top_dept_name, self.DEPT_MAP["Legal Cell"])
