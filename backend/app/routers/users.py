@@ -44,7 +44,7 @@ async def log_audit(db, action: str, performed_by: str, details: dict = None):
         audit_entry = {
             "action": action,
             "performed_by": performed_by,
-            "details": details or {},
+            "new_value": details or {},
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         db.table("audit_log").insert(audit_entry).execute()

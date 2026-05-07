@@ -96,7 +96,7 @@ class DepartmentRouter:
             key=lambda x: x["score"],
             reverse=True
         )
-        
+        return sorted_matches[:2]
     def route_directive(self, text: str, hint: str = None) -> str:
         """
         Syntactic sugar for cases.py - returns the top department's UUID.

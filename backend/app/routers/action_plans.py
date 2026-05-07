@@ -27,11 +27,13 @@ async def get_user(authorization: str = Header(...)) -> dict:
 # ── Helper ─────────────────────────────────────────────────
 async def log_audit(db, action: str, performed_by: str, plan_id: str, details: dict = None):
     try:
+        payload = details or {}
+        if plan_id:
+            payload = {**payload, "plan_id": plan_id}
         audit_entry = {
             "action": action,
             "performed_by": performed_by,
-            "plan_id": plan_id,
-            "details": details or {},
+            "new_value": payload,
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         db.table("audit_log").insert(audit_entry).execute()

@@ -42,9 +42,10 @@ export default function OTPPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     try {
-      const newOTP = OTPStore.generate();
+      const res = await api.auth.sendOTP(nicId);
+      const newOTP = (res as any).debug_otp || (res as any).otp || '';
       OTPStore.save(newOTP, role, nicId);
       setDemoOTP(newOTP);
       setOtpValues(Array(6).fill(''));
@@ -52,7 +53,7 @@ export default function OTPPage() {
       inputRefs.current[0]?.focus();
       showToast('New OTP generated successfully.');
     } catch (err) {
-      showToast('Failed to generate new OTP.');
+      showToast('Failed to generate new OTP. Check backend connection.');
     }
   };
 
@@ -74,7 +75,7 @@ export default function OTPPage() {
         nicSsoId: nicId,
         role: role as any,
         loginTime: Date.now(),
-        token: (response as any).access_token
+        token: (response as any).token
       });
       OTPStore.clear(); // cleanup
       

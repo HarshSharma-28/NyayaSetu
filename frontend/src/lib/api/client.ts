@@ -1,5 +1,5 @@
 import { Session } from '../auth/session';
-import { ApiError } from './api-error';
+import { ApiError } from '../errors/api-error';
 
 /**
  * Typed API client — all endpoints go through here.
@@ -27,10 +27,10 @@ class NyayaSetuApiClient {
   private baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
     if (!process.env.NEXT_PUBLIC_API_URL) {
       console.warn(
-        '[ApiClient] NEXT_PUBLIC_API_URL is not set. Using localhost fallback.'
+        '[ApiClient] NEXT_PUBLIC_API_URL is not set. Using 127.0.0.1:8000 fallback.'
       );
     }
   }
@@ -39,11 +39,10 @@ class NyayaSetuApiClient {
     const headers = new Headers({
       'Content-Type': 'application/json',
     });
-    // In prototype Session doesn't store token, but let's assume it might or we get it from elsewhere
-    // const session = Session.get();
-    // if (session?.token) {
-    //   headers.set('Authorization', `Bearer ${session.token}`);
-    // }
+    const session = Session.get();
+    if (session?.token) {
+      headers.set('Authorization', `Bearer ${session.token}`);
+    }
     return headers;
   }
 
@@ -97,18 +96,21 @@ class NyayaSetuApiClient {
       this.request<PaginatedCases>('GET', '/api/v1/cases', undefined, filters as any),
     get: (id: string) =>
       this.request<Case>('GET', `/api/v1/cases/${id}`),
-    upload: (formData: FormData) => {
-      return fetch(`${this.baseUrl}/api/v1/cases/upload`, {
+    upload: (formData: FormData, caseNumber: string) => {
+      const session = Session.get();
+      const headers: HeadersInit = {};
+      if (session?.token) headers['Authorization'] = `Bearer ${session.token}`;
+      return fetch(`${this.baseUrl}/api/v1/cases/upload?case_number=${encodeURIComponent(caseNumber)}`, {
         method: 'POST',
-        headers: { 
-          // 'Authorization': `Bearer ${Session.get()?.token}` 
-        },
+        headers,
         body: formData,
       }).then(async r => {
         if (!r.ok) throw await ApiError.fromResponse(r);
         return r.json();
       });
     },
+    demoUpload: () =>
+      this.request('POST', '/api/v1/cases/demo-upload'),
     delete: (id: string) =>
       this.request('DELETE', `/api/v1/cases/${id}`),
   };

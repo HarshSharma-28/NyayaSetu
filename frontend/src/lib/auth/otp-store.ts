@@ -24,12 +24,12 @@ export const OTPStore = {
 
   get(): { otp: string; role: string; nicSsoId: string } | null {
     try {
-      const otp = sessionStorage.getItem('nyaya_otp');
+      const otp = sessionStorage.getItem('nyaya_otp') || '';
       const role = sessionStorage.getItem('nyaya_role');
       const nicSsoId = sessionStorage.getItem('nyaya_nic_id');
       const generatedAt = sessionStorage.getItem('nyaya_otp_generated_at');
 
-      if (!otp || !role || !nicSsoId) return null;
+      if (!role || !nicSsoId) return null;
 
       // Check 10-minute expiry for demo
       if (generatedAt) {

@@ -65,6 +65,21 @@ class TimelineResolver:
                 }
         
         return self._manual_review(f"Pattern not recognized: '{timeline_raw}'")
+
+    def resolve_deadline(self, timeline_raw: str, order_date: Optional[date] = None) -> Optional[date]:
+        """Returns a concrete due date (or None) for backwards compatibility."""
+        if order_date is None:
+            order_date = date.today()
+
+        result = self.resolve(timeline_raw, order_date)
+        due_str = result.get("due_date")
+        if not due_str:
+            return None
+
+        try:
+            return datetime.strptime(due_str, "%Y-%m-%d").date()
+        except ValueError:
+            return None
     
     def _calculate(self, match, unit: str, order_date: date) -> Optional[date]:
         """Performs the actual date arithmetic based on the matched unit."""

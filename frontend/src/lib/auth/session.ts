@@ -8,6 +8,7 @@ export interface UserSession {
   nicSsoId: string;
   role: 'admin' | 'reviewer' | 'officer';
   userId?: string;
+  token?: string;
   loginTime: number;
 }
 

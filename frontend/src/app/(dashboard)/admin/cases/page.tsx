@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary';
 import { PriorityBadge } from '@/components/shared/PriorityBadge';
-import { Search, Filter, Download } from 'lucide-react';
+import { Search, Filter, Download, PlayCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api/client';
 
@@ -13,16 +13,49 @@ export default function AdminCasesPage() {
   
   const [cases, setCases] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
+  const [demoSuccess, setDemoSuccess] = useState(false);
+  const [demoError, setDemoError] = useState<string | null>(null);
+  const [newCaseId, setNewCaseId] = useState<string | null>(null);
 
   useEffect(() => {
     api.cases.list()
       .then(res => {
-        const data = (res as any).items || (res as any).data || res;
+        const data = (res as any).cases || (res as any).items || (res as any).data || res;
         setCases(Array.isArray(data) ? data : []);
       })
       .catch(err => console.error("Cases fetch failed:", err))
       .finally(() => setIsLoading(false));
   }, []);
+
+  const handleDemoUpload = async () => {
+    setIsDemoLoading(true);
+    setDemoError(null);
+    setDemoSuccess(false);
+    setNewCaseId(null);
+    try {
+      const result = await api.cases.demoUpload() as any;
+      const newCase = {
+        id: result.case_id,
+        case_number: result.case_number,
+        petitioner: result.petitioner,
+        court_name: result.court_name,
+        date_of_order: result.date_of_order,
+        status: result.status,
+        priority: 'HIGH',
+        department: 'Finance',
+      };
+      setCases(prev => [newCase, ...prev]);
+      setNewCaseId(result.case_id);
+      setDemoSuccess(true);
+      setTimeout(() => setDemoSuccess(false), 4000);
+    } catch (err: any) {
+      setDemoError(err?.message || 'Demo upload failed. Is the backend running?');
+      setTimeout(() => setDemoError(null), 5000);
+    } finally {
+      setIsDemoLoading(false);
+    }
+  };
 
   return (
     <ErrorBoundary sectionName="Cases Full List">
@@ -33,14 +66,41 @@ export default function AdminCasesPage() {
             <h1 className="text-2xl font-bold text-white mb-2">Case Registry</h1>
             <p className="text-sm text-text-secondary">Manage and monitor all judicial directives across departments.</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-navy-800 text-white rounded-md hover:bg-navy-700 transition-colors border border-border-default text-sm">
-            <Download size={16} />
-            Export CSV
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Demo Upload Button */}
+            <button
+              onClick={handleDemoUpload}
+              disabled={isDemoLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-gold-500/10 text-gold-400 rounded-md hover:bg-gold-500/20 transition-colors border border-gold-500/30 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isDemoLoading ? (
+                <><Loader2 size={16} className="animate-spin" /> Processing...</>
+              ) : demoSuccess ? (
+                <><CheckCircle2 size={16} className="text-green-400" /> Uploaded!</>
+              ) : (
+                <><PlayCircle size={16} /> View Demo</>
+              )}
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-navy-800 text-white rounded-md hover:bg-navy-700 transition-colors border border-border-default text-sm">
+              <Download size={16} />
+              Export CSV
+            </button>
+          </div>
         </div>
 
+        {/* Toast notifications */}
+        {demoError && (
+          <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+            ⚠️ {demoError}
+          </div>
+        )}
+        {demoSuccess && (
+          <div className="px-4 py-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+            ✅ Demo judgment uploaded successfully and stored in Supabase! New case appears at the top of the list.
+          </div>
+        )}
+
         <div className="glass-card p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
-          
           {/* Tabs */}
           <div className="flex bg-navy-900/50 p-1 rounded-lg border border-border-subtle overflow-x-auto w-full md:w-auto">
             {tabs.map(tab => (
@@ -94,12 +154,21 @@ export default function AdminCasesPage() {
                   </tr>
                 ) : cases.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-text-muted">No cases found in the registry.</td>
+                    <td colSpan={6} className="px-6 py-10 text-center text-text-muted">
+                      No cases found in the registry.{' '}
+                      <button onClick={handleDemoUpload} className="text-gold-400 hover:underline">Click here to run a demo upload.</button>
+                    </td>
                   </tr>
                 ) : cases.map((item: any) => (
-                  <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                  <tr
+                    key={item.id}
+                    className={`hover:bg-white/5 transition-colors ${item.id === newCaseId ? 'bg-gold-500/5 border-l-2 border-l-gold-400' : ''}`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gold-400">
                       {item.case_number}
+                      {item.id === newCaseId && (
+                        <span className="ml-2 text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-normal">NEW</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                       {item.petitioner || item.court_name || "N/A"}

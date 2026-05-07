@@ -2,7 +2,7 @@
 const nextConfig = {
   images: {
     domains: [
-      'your-project.supabase.co',
+      'xbcgxlghpqlomgwfusnt.supabase.co',
       'lh3.googleusercontent.com',
     ],
     // Explicit image error handling — no unoptimized

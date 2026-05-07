@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, Header, UploadFile, File, Query
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 import uuid
+import os
+from pathlib import Path
 
 from app.core.config import settings
 from app.core.logger import app_logger, audit_logger
@@ -25,7 +27,6 @@ from app.core.exceptions.pdf_exceptions import (
 )
 from app.core.exceptions.database_exceptions import DatabaseConnectionException
 
-# Module imports (assuming these exist in the project)
 # Module imports
 from app.modules.pdf_processor.extractor import PDFProcessor
 from app.modules.ai_orchestrator.gemini_client import GeminiOrchestrator
@@ -33,6 +34,9 @@ from app.modules.action_planner.timeline_resolver import TimelineResolver
 from app.modules.action_planner.dept_router import DepartmentRouter
 
 router = APIRouter(tags=["cases"])
+
+# Path to the bundled demo PDF (relative to the backend root)
+DEMO_PDF_PATH = Path(__file__).resolve().parents[2] / "SCI_Judgment_WP4092_2024.pdf"
 
 
 # ── Dependency ─────────────────────────────────────────────
@@ -49,12 +53,26 @@ async def log_audit(db, action: str, performed_by: str, case_id: str = None, det
             "action": action,
             "performed_by": performed_by,
             "case_id": case_id,
-            "details": details or {},
+            "new_value": details or {},
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         db.table("audit_log").insert(audit_entry).execute()
     except Exception as exc:
         app_logger.error(f"Audit logging failed: {exc}")
+
+
+def _parse_order_date(raw: Optional[str]) -> date:
+    if not raw:
+        return date.today()
+    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(raw, fmt).date()
+        except ValueError:
+            continue
+    try:
+        return datetime.fromisoformat(raw).date()
+    except ValueError:
+        return date.today()
 
 
 # ── Endpoints ──────────────────────────────────────────────
@@ -114,8 +132,9 @@ async def upload_case_pdf(
         
         # Step 3: Action Planning & Routing
         directives_processed = []
+        order_date = _parse_order_date(judgment_dna.get("date_of_order"))
         for d in judgment_dna.get("directives", []):
-            deadline = timer.resolve_deadline(d.get("timeline_raw"))
+            deadline = timer.resolve_deadline(d.get("timeline_raw"), order_date=order_date)
             dept = router_logic.route_directive(d.get("raw_text"), d.get("department_hint"))
             
             directives_processed.append({
@@ -142,13 +161,13 @@ async def upload_case_pdf(
             "overall_nature": judgment_dna.get("overall_nature", "COMPLIANCE_REQUIRED"),
             "created_at": datetime.now(timezone.utc).isoformat()
         }
-        case_res = db.table("cases").insert(case_data).select().execute()
+        case_res = db.table("cases").insert(case_data).execute()
         new_case_id = case_res.data[0]["id"]
 
         # Insert Directives (Bulk)
         for d in directives_processed:
             d["case_id"] = new_case_id
-        db.table("directives").insert(directives_processed).select().execute()
+        db.table("directives").insert(directives_processed).execute()
 
         # Audit Log
         await log_audit(db, "case_processed_ai", user["user_id"], new_case_id, {"case_number": case_number})
@@ -170,6 +189,98 @@ async def upload_case_pdf(
         db.storage.from_(settings.PDF_BUCKET).remove([file_path])
         raise DatabaseConnectionException(message=f"Processing error: {str(exc)}")
 
+
+@router.post("/demo-upload")
+async def demo_upload_case():
+    """
+    Demo endpoint: reads the bundled SCI_Judgment_WP4092_2024.pdf from the backend
+    directory and runs the full upload pipeline. No authentication required.
+    Idempotent — uses a timestamp-suffixed case number to allow repeated demos.
+    """
+    if not DEMO_PDF_PATH.exists():
+        raise DatabaseConnectionException(message=f"Demo PDF not found at: {DEMO_PDF_PATH}")
+
+    file_content = DEMO_PDF_PATH.read_bytes()
+
+    # Generate a unique demo case number so repeated demos don't conflict
+    demo_case_number = f"SCI-WP4092-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+    db = get_supabase()
+
+    # Storage Upload
+    file_path = f"demo/{uuid.uuid4()}.pdf"
+    try:
+        db.storage.from_(settings.PDF_BUCKET).upload(file_path, file_content)
+    except Exception as exc:
+        app_logger.error(f"Demo file upload to storage failed: {exc}")
+        raise DatabaseConnectionException(message="Failed to upload demo PDF to storage")
+
+    try:
+        pdf_proc = PDFProcessor()
+        ai_orch = GeminiOrchestrator()
+        timer = TimelineResolver()
+        router_logic = DepartmentRouter()
+
+        extraction = pdf_proc.extract_text(file_content)
+        judgment_dna = await ai_orch.extract_judgment_dna(
+            extraction["full_text"],
+            order_date=datetime.now().strftime("%Y-%m-%d")
+        )
+
+        directives_processed = []
+        order_date = _parse_order_date(judgment_dna.get("date_of_order"))
+        for d in judgment_dna.get("directives", []):
+            deadline = timer.resolve_deadline(d.get("timeline_raw"), order_date=order_date)
+            dept = router_logic.route_directive(d.get("raw_text"), d.get("department_hint"))
+            directives_processed.append({
+                "directive_code": f"DIR-{uuid.uuid4().hex[:6].upper()}",
+                "raw_text": d.get("raw_text"),
+                "priority": d.get("priority", "MEDIUM").upper(),
+                "department_id": dept,
+                "timeline_resolved": deadline.isoformat() if deadline else None,
+                "confidence_score": d.get("confidence_score", 0.0),
+                "status": "pending"
+            })
+
+        case_data = {
+            "case_number": demo_case_number,
+            "status": "extracted",
+            "pdf_url": file_path,
+            "petitioner": judgment_dna.get("petitioner", "Demo Petitioner"),
+            "respondents": judgment_dna.get("respondents", []),
+            "court_name": judgment_dna.get("court_name", "Supreme Court of India"),
+            "date_of_order": judgment_dna.get("date_of_order", datetime.now().strftime("%Y-%m-%d")),
+            "overall_nature": judgment_dna.get("overall_nature", "COMPLIANCE_REQUIRED"),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        case_res = db.table("cases").insert(case_data).execute()
+        new_case_id = case_res.data[0]["id"]
+
+        for d in directives_processed:
+            d["case_id"] = new_case_id
+        if directives_processed:
+            db.table("directives").insert(directives_processed).execute()
+
+        app_logger.info(f"Demo upload complete: case_id={new_case_id}, case_number={demo_case_number}")
+
+        return {
+            "case_id": new_case_id,
+            "case_number": demo_case_number,
+            "directive_count": len(directives_processed),
+            "status": "extracted",
+            "petitioner": case_data["petitioner"],
+            "court_name": case_data["court_name"],
+            "date_of_order": case_data["date_of_order"],
+            "ai_metadata": {
+                "court": judgment_dna.get("court_name"),
+                "date": judgment_dna.get("date_of_order")
+            }
+        }
+
+    except Exception as exc:
+        app_logger.error(f"Demo processing failed: {exc}")
+        db.storage.from_(settings.PDF_BUCKET).remove([file_path])
+        raise DatabaseConnectionException(message=f"Demo processing error: {str(exc)}")
 
 
 @router.get("/")

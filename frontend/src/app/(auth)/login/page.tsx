@@ -7,9 +7,9 @@ import { Shield, Eye, User, Lock, Contact, ChevronDown, CheckCircle, ArrowRight 
 import { IMAGES, getImageWithFallback } from '@/lib/images/image-loader';
 import { OTPStore } from '@/lib/auth/otp-store';
 import { supabase } from '@/lib/supabase/client';
+import { api } from '@/lib/api/client';
 
 type Role = 'admin' | 'reviewer' | 'officer';
-import { api } from '@/lib/api/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,6 +29,7 @@ export default function LoginPage() {
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!nicSsoId || !password) {
       setError('Please fill all fields');
       return;
@@ -46,6 +47,7 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error('Login Error:', err);
       setError(err.message || 'Authentication failed. Please check credentials.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -204,6 +206,12 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
+            {error && (
+              <div className="text-sm text-red-400 font-medium">
+                {error}
+              </div>
+            )}
 
             <div className="flex items-center group cursor-pointer" onClick={() => {/* Toggle state logic if needed */ }}>
               <div className="relative flex items-center justify-center">
