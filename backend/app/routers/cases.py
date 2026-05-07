@@ -119,12 +119,13 @@ async def upload_case_pdf(
             dept = router_logic.route_directive(d.get("raw_text"), d.get("department_hint"))
             
             directives_processed.append({
-                "directive_text": d.get("raw_text"),
-                "priority": d.get("priority", "medium").lower(),
-                "assigned_department": dept,
-                "compliance_deadline": deadline.isoformat() if deadline else None,
+                "directive_code": f"DIR-{uuid.uuid4().hex[:6].upper()}",
+                "raw_text": d.get("raw_text"),
+                "priority": d.get("priority", "MEDIUM").upper(),
+                "department_id": dept,
+                "timeline_resolved": deadline.isoformat() if deadline else None,
                 "confidence_score": d.get("confidence_score", 0.0),
-                "source_location": d.get("source_location", "")
+                "status": "pending"
             })
 
         # 5. Atomic-like Insert
@@ -134,10 +135,11 @@ async def upload_case_pdf(
             "status": "extracted",
             "pdf_url": file_path,
             "uploaded_by": user["user_id"],
-            "petitioner": judgment_dna.get("petitioner"),
-            "respondent": ", ".join(judgment_dna.get("respondents", [])),
-            "court_name": judgment_dna.get("court_name"),
-            "judgment_date": judgment_dna.get("date_of_order"),
+            "petitioner": judgment_dna.get("petitioner", "Unknown"),
+            "respondents": judgment_dna.get("respondents", []),
+            "court_name": judgment_dna.get("court_name", "Unknown Court"),
+            "date_of_order": judgment_dna.get("date_of_order", datetime.now().strftime("%Y-%m-%d")),
+            "overall_nature": judgment_dna.get("overall_nature", "COMPLIANCE_REQUIRED"),
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         case_res = db.table("cases").insert(case_data).execute()
@@ -190,9 +192,7 @@ async def list_cases(
     # Visibility constraints
     if user["role"] == "officer":
         # Officers only see cases with their dept's directives
-        # This requires a join or a subquery. 
-        # In Supabase/Postgrest we can use .select("*, directives!inner(*)")
-        query = query.select("*, directives!inner(*)").eq("directives.assigned_department", user["dept_id"])
+        query = query.select("*, directives!inner(*)").eq("directives.department_id", user.get("dept_id"))
     
     # Filters
     if status: query = query.eq("status", status)
