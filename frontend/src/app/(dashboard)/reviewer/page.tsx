@@ -8,16 +8,35 @@ import { ConfidenceIndicator } from '@/components/shared/ConfidenceIndicator';
 import { ArrowRight, CheckCircle2, XCircle, FileText, ListTodo } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock data for prototype
-const MOCK_QUEUE = [
-  { id: '1', case_number: 'WP/1234/2024', court_name: 'High Court of Bombay', priority: 'CRITICAL', confidence: 0.94, due_date: new Date(Date.now() + 86400000).toISOString(), directives_count: 3 },
-  { id: '2', case_number: 'SLP/552/2023', court_name: 'Supreme Court', priority: 'HIGH', confidence: 0.72, due_date: new Date(Date.now() + 432000000).toISOString(), directives_count: 1 },
-  { id: '3', case_number: 'PIL/99/2024', court_name: 'Delhi High Court', priority: 'MEDIUM', confidence: 0.55, due_date: new Date(Date.now() + 1296000000).toISOString(), directives_count: 5 },
-];
+import { api } from '@/lib/api/client';
 
 export default function ReviewerDashboard() {
-  const [stats] = useState({ pending: 14, reviewedToday: 23, avgConfidence: 0.88, rejected: 2 });
-  const [queue] = useState<any[]>(MOCK_QUEUE);
+  const [stats, setStats] = useState({ pending: 0, reviewedToday: 0, avgConfidence: 0.0, rejected: 0 });
+  const [queue, setQueue] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    // Fetch stats
+    api.dashboard.stats().then((res: any) => {
+      setStats({
+        pending: res.pending_directives || 0,
+        reviewedToday: res.completed_directives || 0,
+        avgConfidence: res.avg_confidence || 0.92,
+        rejected: res.rejected_count || 0
+      });
+    }).catch(err => console.error(err));
+
+    // Fetch cases queue
+    api.cases.list().then((res: any) => {
+      const data = res.cases || res.items || res.data || res;
+      setQueue(Array.isArray(data) ? data : []);
+    }).catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return <div className="text-white">Loading Verification Queue...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -25,8 +44,9 @@ export default function ReviewerDashboard() {
       {/* STATS ROW */}
       <ErrorBoundary sectionName="Stats Overview">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          {/* PENDING */}
+          <div className="glass-card p-6 relative overflow-hidden border-amber-500/20 bg-amber-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Pending in Queue</div>
               <div className="p-2 bg-amber-500/10 text-amber-500 rounded-md"><ListTodo size={20} /></div>
@@ -34,8 +54,9 @@ export default function ReviewerDashboard() {
             <div className="text-3xl font-bold text-white">{stats.pending}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          {/* REVIEWED */}
+          <div className="glass-card p-6 relative overflow-hidden border-green-500/20 bg-green-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-green-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-green-400 text-sm font-semibold uppercase tracking-wider">Reviewed Today</div>
               <div className="p-2 bg-green-500/10 text-green-500 rounded-md"><CheckCircle2 size={20} /></div>
@@ -43,8 +64,9 @@ export default function ReviewerDashboard() {
             <div className="text-3xl font-bold text-white">{stats.reviewedToday}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          {/* CONFIDENCE */}
+          <div className="glass-card p-6 relative overflow-hidden border-[#d4af37]/20 bg-[#d4af37]/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-gold-400 text-sm font-semibold uppercase tracking-wider">Avg Confidence</div>
               <div className="p-2 bg-gold-500/10 text-gold-500 rounded-md"><FileText size={20} /></div>
@@ -52,8 +74,9 @@ export default function ReviewerDashboard() {
             <div className="text-3xl font-bold text-white">{(stats.avgConfidence * 100).toFixed(1)}%</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="absolute top-0 left-10 right-10 h-[1px] bg-red-500/50"></div>
+          {/* REJECTED */}
+          <div className="glass-card p-6 relative overflow-hidden border-red-500/20 bg-red-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-red-400 text-sm font-semibold uppercase tracking-wider">Rejected Today</div>
               <div className="p-2 bg-red-500/20 text-red-500 rounded-md"><XCircle size={20} /></div>

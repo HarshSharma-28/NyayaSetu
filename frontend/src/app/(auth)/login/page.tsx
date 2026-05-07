@@ -39,7 +39,7 @@ export default function LoginPage() {
       const res = await api.auth.sendOTP(nicSsoId);
       
       // Save info locally. In demo mode, backend returns the OTP so we can auto-fill or log it.
-      const returnedOTP = (res as any).otp || '';
+      const returnedOTP = (res as any).otp || (res as any).debug_otp || '';
       OTPStore.save(returnedOTP, selectedRole, nicSsoId);
 
       router.push('/otp');

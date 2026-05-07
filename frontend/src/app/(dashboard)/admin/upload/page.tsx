@@ -4,8 +4,10 @@ import React, { useState, useRef } from 'react';
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary';
 import { UploadCloud, FileText, X, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 export default function UploadPage() {
+  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [pipelineState, setPipelineState] = useState<number>(0); 
@@ -184,7 +186,10 @@ export default function UploadPage() {
                   <div className="text-sm text-green-400 font-bold mb-2">Success: 3 Directives Extracted</div>
                   <div className="text-xs text-text-secondary font-mono">Case: WP/5522/2024</div>
                 </div>
-                <button className="flex items-center justify-center gap-2 w-full py-3 bg-navy-800 text-white font-bold rounded-md hover:bg-navy-700 transition-all border border-border-default">
+                <button 
+                  onClick={() => router.push('/reviewer/verify/demo-case')}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-navy-800 text-white font-bold rounded-md hover:bg-navy-700 transition-all border border-border-default"
+                >
                   Go to Verification <ArrowRight size={16} />
                 </button>
               </div>

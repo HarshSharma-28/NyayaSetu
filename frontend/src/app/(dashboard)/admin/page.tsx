@@ -17,12 +17,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     // Fetch real data from the NyayaSetu backend
     api.dashboard.stats()
-      .then(res => setStats(res as any))
+      .then(res => {
+        const s = res as any;
+        setStats({
+          total: s.total_cases || 0,
+          pending: s.pending_directives || 0,
+          dueThisWeek: 0,
+          overdue: s.contempt_risk_count || 0
+        });
+      })
       .catch(err => console.error("Stats fetch failed:", err));
       
     api.cases.list()
       .then(res => {
-        const data = (res as any).items || (res as any).data || res;
+        let data = (res as any).cases || (res as any).items || (res as any).data || res;
         setCases(Array.isArray(data) ? data : []);
       })
       .catch(err => console.error("Cases fetch failed:", err))
@@ -56,8 +64,8 @@ export default function AdminDashboard() {
       {/* 2. STATS ROW */}
       <ErrorBoundary sectionName="Stats Overview">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass-card p-6 relative overflow-hidden border-gold-500/30 bg-gold-500/5">
-            <div className="absolute top-0 left-10 right-10 h-[1px] bg-gold-500/50"></div>
+          <div className="glass-card p-6 relative overflow-hidden border-gold-500/20 bg-gold-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#d4af37] to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-gold-400 text-sm font-semibold uppercase tracking-wider">Total Cases</div>
               <div className="p-2 bg-gold-500/20 text-gold-500 rounded-md"><FolderOpen size={20} /></div>
@@ -65,8 +73,8 @@ export default function AdminDashboard() {
             <div className="text-3xl font-bold text-white">{stats.total}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden border-amber-500/30 bg-amber-500/5">
-            <div className="absolute top-0 left-10 right-10 h-[1px] bg-amber-500/50"></div>
+          <div className="glass-card p-6 relative overflow-hidden border-amber-500/20 bg-amber-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Pending Verif.</div>
               <div className="p-2 bg-amber-500/20 text-amber-500 rounded-md"><Clock size={20} /></div>
@@ -74,8 +82,8 @@ export default function AdminDashboard() {
             <div className="text-3xl font-bold text-white">{stats.pending}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden border-blue-500/30 bg-blue-500/5">
-            <div className="absolute top-0 left-10 right-10 h-[1px] bg-blue-500/50"></div>
+          <div className="glass-card p-6 relative overflow-hidden border-blue-500/20 bg-blue-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Due This Week</div>
               <div className="p-2 bg-blue-500/20 text-blue-500 rounded-md"><Calendar size={20} /></div>
@@ -83,8 +91,8 @@ export default function AdminDashboard() {
             <div className="text-3xl font-bold text-white">{stats.dueThisWeek}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden border-red-500/30 bg-red-500/5">
-            <div className="absolute top-0 left-10 right-10 h-[1px] bg-red-500/50"></div>
+          <div className="glass-card p-6 relative overflow-hidden border-red-500/20 bg-red-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-red-400 text-sm font-semibold uppercase tracking-wider">Overdue</div>
               <div className="p-2 bg-red-500/20 text-red-500 rounded-md"><AlertTriangle size={20} /></div>

@@ -7,17 +7,33 @@ import { ListTodo, Calendar, CheckCircle2, AlertTriangle, MessageSquare } from '
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
-// Mock data
-const MOCK_ACTIONS = [
-  { id: '1', case_number: 'WP/1234/2024', directive: 'Clear pending dues', due_date: new Date(Date.now() + 86400000).toISOString(), status: 'PENDING' },
-  { id: '2', case_number: 'SLP/552/2023', directive: 'File compliance report', due_date: new Date(Date.now() - 86400000).toISOString(), status: 'IN_PROGRESS' },
-];
+import { api } from '@/lib/api/client';
 
 export default function OfficerDashboard() {
-  const [stats] = useState({ pending: 8, dueThisWeek: 3, completedMonth: 12, overdue: 1 });
-  const [actions, setActions] = useState(MOCK_ACTIONS);
+  const [stats, setStats] = useState({ pending: 0, dueThisWeek: 0, completedMonth: 0, overdue: 0 });
+  const [actions, setActions] = useState<any[]>([]);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [completionNote, setCompletionNote] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    // Fetch stats
+    api.dashboard.stats().then((res: any) => {
+      setStats({
+        pending: res.pending_directives || 0,
+        dueThisWeek: 0, // Would be calculated from DB
+        completedMonth: res.completed_directives || 0,
+        overdue: res.contempt_risk_count || 0
+      });
+    }).catch(err => console.error(err));
+
+    // Fetch action plans / cases
+    api.cases.list().then((res: any) => {
+      const data = res.cases || res.items || res.data || res;
+      setActions(Array.isArray(data) ? data : []);
+    }).catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const handleStatusChange = (id: string, newStatus: string) => {
     if (newStatus === 'COMPLETED') {
@@ -44,8 +60,9 @@ export default function OfficerDashboard() {
       {/* STATS ROW */}
       <ErrorBoundary sectionName="Stats Overview">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          {/* PENDING */}
+          <div className="glass-card p-6 relative overflow-hidden border-amber-500/20 bg-amber-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-amber-400 text-sm font-semibold uppercase tracking-wider">Pending Actions</div>
               <div className="p-2 bg-amber-500/10 text-amber-500 rounded-md"><ListTodo size={20} /></div>
@@ -53,8 +70,9 @@ export default function OfficerDashboard() {
             <div className="text-3xl font-bold text-white">{stats.pending}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          {/* DUE THIS WEEK */}
+          <div className="glass-card p-6 relative overflow-hidden border-blue-500/20 bg-blue-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Due This Week</div>
               <div className="p-2 bg-blue-500/10 text-blue-500 rounded-md"><Calendar size={20} /></div>
@@ -62,8 +80,9 @@ export default function OfficerDashboard() {
             <div className="text-3xl font-bold text-white">{stats.dueThisWeek}</div>
           </div>
           
-          <div className="glass-card p-6 relative overflow-hidden">
-            <div className="gold-accent-top"></div>
+          {/* COMPLETED MONTH */}
+          <div className="glass-card p-6 relative overflow-hidden border-green-500/20 bg-green-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-green-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-green-400 text-sm font-semibold uppercase tracking-wider">Completed Month</div>
               <div className="p-2 bg-green-500/10 text-green-500 rounded-md"><CheckCircle2 size={20} /></div>
@@ -71,8 +90,9 @@ export default function OfficerDashboard() {
             <div className="text-3xl font-bold text-white">{stats.completedMonth}</div>
           </div>
           
-          <div className={`glass-card p-6 relative overflow-hidden ${stats.overdue > 0 ? 'border-red-500/50 bg-red-500/5' : ''}`}>
-            {stats.overdue > 0 && <div className="absolute top-0 left-10 right-10 h-[1px] bg-red-500/50"></div>}
+          {/* OVERDUE */}
+          <div className="glass-card p-6 relative overflow-hidden border-red-500/20 bg-red-500/5">
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent"></div>
             <div className="flex justify-between items-start mb-4">
               <div className="text-red-400 text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
                 Overdue {stats.overdue > 0 && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}

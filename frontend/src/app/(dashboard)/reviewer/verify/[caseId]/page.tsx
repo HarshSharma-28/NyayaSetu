@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/errors/ErrorBoundary';
 import { ConfidenceIndicator } from '@/components/shared/ConfidenceIndicator';
 import { FileText, ChevronLeft, ChevronRight, Check, Edit2, X, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 // Mock data
@@ -26,11 +27,17 @@ export default function VerificationPage({ params }: { params: { caseId: string 
   const current = directives[currentIdx];
   const progressPercent = ((currentIdx + 1) / directives.length) * 100;
 
+  const router = useRouter();
+
   const handleNext = () => {
     if (currentIdx < directives.length - 1) {
       setCurrentIdx(currentIdx + 1);
       setEditState(directives[currentIdx + 1]);
       setIsEditing(false);
+    } else {
+      localStorage.setItem('demo_upload_done', 'true');
+      toast.success('All directives verified successfully! Routing to Dashboard...');
+      setTimeout(() => router.push('/admin'), 1500);
     }
   };
 

@@ -57,58 +57,59 @@ async def log_audit(db, action: str, performed_by: str, details: dict = None):
 @router.post("/send-otp")
 async def send_otp(request: Request, body: SendOTPRequest):
     """
-    Step 1: Validate SSO ID, upsert user, and send OTP.
+    Step 1: Validate SSO ID, Auto-Create user if missing, and send OTP.
     """
     client_ip = request.client.host
-    check_rate_limit(f"otp:{client_ip}", 3, 300)
 
     try:
         db = get_supabase()
         
-        # Check if user exists or needs to be created
-        user_query = db.table("users").select("*").eq("sso_id", body.nic_sso_id).execute()
+        # 1. Check if user exists, if not, AUTO-CREATE for testing
+        user_query = db.table("users").select("*").eq("nic_sso_id", body.nic_sso_id).execute()
         
         if not user_query.data:
-            # For this judicial platform, we assume users are pre-registered or mapped from NIC SSO
-            # Here we upsert or handle as needed. Rule: UPSERT on nic_sso_id
-            # In a real scenario, we'd fetch full details from NIC SSO API
+            app_logger.info(f"Auto-creating user for ID: {body.nic_sso_id}")
             user_data = {
-                "sso_id": body.nic_sso_id,
-                "full_name": f"User {body.nic_sso_id}",  # Placeholder
+                "nic_sso_id": body.nic_sso_id,
+                "employee_id": f"EMP-{body.nic_sso_id}",
+                "full_name": f"User {body.nic_sso_id}",
+                "email": f"{body.nic_sso_id}@example.gov.in", # Mock email for demo
                 "is_active": True,
-                "role": "officer" # Default role
+                "role": "officer" # Default role, can be changed in login
             }
-            db.table("users").upsert(user_data, on_conflict="sso_id").execute()
-            user_query = db.table("users").select("*").eq("sso_id", body.nic_sso_id).execute()
+            db.table("users").insert(user_data).execute()
+            user_query = db.table("users").select("*").eq("nic_sso_id", body.nic_sso_id).execute()
 
         user = user_query.data[0]
         
-        # Generate OTP
+        # 2. Generate OTP
         otp = str(random.randint(100000, 999999))
         
-        # Store OTP in Supabase (with expiry)
+        # 3. Store OTP (Upsert to replace old ones)
         db.table("otp_store").upsert({
-            "sso_id": body.nic_sso_id,
+            "nic_sso_id": body.nic_sso_id,
             "otp_code": otp,
             "expires_at": (datetime.now(timezone.utc).replace(microsecond=0) + 
                           __import__('datetime').timedelta(minutes=5)).isoformat()
-        }, on_conflict="sso_id").execute()
+        }, on_conflict="nic_sso_id").execute()
 
-        # Send Email
-        if not settings.DEMO_MODE:
-            email_service.send_otp(to=user.get("email", "admin@nyayasetu.gov.in"), otp=otp, name=user["full_name"])
+        # 4. Mock sending (Always log to console for easy testing)
+        app_logger.info(f"🔑 OTP for {body.nic_sso_id}: {otp}")
         
-        await log_audit(db, "otp_requested", user["id"], {"sso_id": body.nic_sso_id})
+        if not settings.DEMO_MODE:
+            try:
+                email_service.send_otp(to=user.get("email"), otp=otp, name=user["full_name"])
+            except Exception as e:
+                app_logger.warning(f"Email send failed (but OTP is valid): {e}")
+        
+        await log_audit(db, "otp_requested", user["id"], {"sso_id": body.nic_sso_id, "otp_code": otp})
 
-        response = {"message": "OTP sent"}
-        if settings.DEMO_MODE:
-            response["otp"] = otp
-            
-        return response
+        return {"message": "OTP sent", "debug_otp": otp} # Returning OTP in response for even easier testing
 
     except Exception as exc:
         app_logger.error(f"OTP Flow failed: {exc}")
-        raise DatabaseConnectionException(details={"error": str(exc)})
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @router.post("/login")
@@ -117,12 +118,12 @@ async def login(request: Request, body: LoginRequest):
     Step 2: Verify OTP and Role, then issue JWT.
     """
     client_ip = request.client.host
-    check_rate_limit(f"login:{client_ip}", 5, 900)
+    # check_rate_limit(f"login:{client_ip}", 50, 900) # Disabled for demo
 
     db = get_supabase()
     
     # 1. Fetch User
-    user_query = db.table("users").select("*").eq("sso_id", body.nic_sso_id).execute()
+    user_query = db.table("users").select("*").eq("nic_sso_id", body.nic_sso_id).execute()
     if not user_query.data:
         raise UserNotFoundException()
     
@@ -134,10 +135,14 @@ async def login(request: Request, body: LoginRequest):
         
     # 3. Check Role
     if user["role"] != body.role:
-        raise RoleMismatchException()
+        if settings.DEMO_MODE:
+            db.table("users").update({"role": body.role}).eq("id", user["id"]).execute()
+            user["role"] = body.role
+        else:
+            raise RoleMismatchException()
 
     # 4. Verify OTP
-    otp_query = db.table("otp_store").select("*").eq("sso_id", body.nic_sso_id).execute()
+    otp_query = db.table("otp_store").select("*").eq("nic_sso_id", body.nic_sso_id).execute()
     if not otp_query.data:
         raise InvalidOTPException()
         
