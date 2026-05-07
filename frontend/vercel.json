@@ -3,11 +3,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "regions": ["bom1"],
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@nyayasetu_api_url",
-    "NEXT_PUBLIC_SUPABASE_URL": "@nyayasetu_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@nyayasetu_supabase_key"
-  },
+
   "headers": [
     {
       "source": "/(.*)",
