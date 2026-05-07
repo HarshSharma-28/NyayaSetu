@@ -61,11 +61,11 @@ async def get_active_actions(
     query = db.table("action_plans").select("*, directives(*), cases(*)").eq("is_verified", True).neq("completion_status", "completed")
     
     if user["role"] == "officer":
-        query = query.eq("assigned_department", user.get("dept_id"))
+        query = query.eq("responsible_dept", user.get("dept_id"))
     elif dept:
-        query = query.eq("assigned_department", dept)
+        query = query.eq("responsible_dept", dept)
         
-    result = query.order("deadline", desc=False).execute()
+    result = query.order("due_date", desc=False).execute()
     actions = result.data
     
     if priority:

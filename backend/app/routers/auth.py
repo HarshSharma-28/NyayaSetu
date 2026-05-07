@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Header, Request
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 import random
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from app.core.config import settings
 from app.core.logger import app_logger, audit_logger
@@ -89,8 +89,7 @@ async def send_otp(request: Request, body: SendOTPRequest):
         db.table("otp_store").upsert({
             "nic_sso_id": body.nic_sso_id,
             "otp_code": otp,
-            "expires_at": (datetime.now(timezone.utc).replace(microsecond=0) + 
-                          __import__('datetime').timedelta(minutes=5)).isoformat()
+            "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
         }, on_conflict="nic_sso_id").execute()
 
         # 4. Mock sending (Always log to console for easy testing)

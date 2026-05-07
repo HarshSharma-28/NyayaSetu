@@ -55,9 +55,9 @@ async def list_action_plans(
     query = db.table("action_plans").select("*, directives(*), cases(*)").eq("is_verified", True)
     
     if user["role"] == "officer":
-        query = query.eq("assigned_department", user.get("dept_id"))
+        query = query.eq("responsible_dept", user.get("dept_id"))
     elif dept:
-        query = query.eq("assigned_department", dept)
+        query = query.eq("responsible_dept", dept)
         
     if status: query = query.eq("completion_status", status)
     # Priority is often in the directive, so we might need a join or filter on the result
@@ -104,13 +104,27 @@ async def update_plan_status(id: str, body: dict, user: dict = Depends(get_user)
     
     # Notify Admin on completion
     if updates.get("completion_status") == "completed":
-        notif_data = {
-            "user_id": "admin_system", # Placeholder for admin users
-            "title": "Action Plan Completed",
-            "message": f"Plan {id} marked as completed by {user['user_id']}",
-            "is_read": False
-        }
-        # db.table("notifications").insert(notif_data).execute()
+        # 1. Fetch case details to get case number
+        case_id = current.get("case_id")
+        case_num = "Unknown Case"
+        if case_id:
+            c_res = db.table("cases").select("case_number").eq("id", case_id).execute()
+            if c_res.data:
+                case_num = c_res.data[0]["case_number"]
+
+        # 2. Find all admin users to notify them
+        admins_res = db.table("users").select("id").eq("role", "admin").execute()
+        
+        for admin in admins_res.data:
+            notif_data = {
+                "user_id": admin["id"],
+                "case_id": case_id,
+                "type": "action_required",
+                "title": "Action Plan Completed",
+                "message": f"Case {case_num}: Task has been marked as COMPLETED by the officer.",
+                "is_read": False
+            }
+            db.table("notifications").insert(notif_data).execute()
 
     return result.data[0]
 
