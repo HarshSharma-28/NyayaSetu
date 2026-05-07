@@ -21,7 +21,7 @@ app = FastAPI(
     title="NyayaSetu API",
     version=settings.API_VERSION,
     description="Court Judgment Intelligence Platform",
-    docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
+    docs_url="/docs",
     redoc_url=None,
 )
 

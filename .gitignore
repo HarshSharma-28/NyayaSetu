@@ -59,6 +59,12 @@ backend/local_nyayasetu.db
 # Demo assets (bundled in Docker image, not committed to git)
 backend/SCI_Judgment_WP4092_2024.pdf
 
+# Dockerfile with baked secrets — never commit
+backend/Dockerfile
+
+# Production env files with real URLs
+frontend/.env.production
+
 # Agent / AI tooling artifacts
 .agents/
 skills-lock.json
