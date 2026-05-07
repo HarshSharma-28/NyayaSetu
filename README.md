@@ -516,5 +516,5 @@ MIT License — see [LICENSE](LICENSE) for details.
 ---
 
 <div align="center">
-Built with ❤️ for improving judicial compliance in India's court system.
+Built with ❤️ for AI for Bharat hackathon 2026 co-presented by the PAN IIT Bangalore Alumni Association and the Government of Karnataka.
 </div>
