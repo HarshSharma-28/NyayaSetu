@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import RedirectResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import settings
@@ -20,9 +21,9 @@ from app.routers import dashboard, action_plans, users, notifications
 app = FastAPI(
     title="NyayaSetu API",
     version=settings.API_VERSION,
-    description="Court Judgment Intelligence Platform",
+    description="Court Judgment Intelligence Platform — AI-powered extraction of judicial directives from Supreme Court orders.",
     docs_url="/docs",
-    redoc_url=None,
+    redoc_url="/redoc",
 )
 
 # ── MIDDLEWARE ──────────────────────────────────────────────
@@ -59,6 +60,19 @@ app.include_router(dashboard.router,     prefix=PREFIX + "/dashboard")
 app.include_router(action_plans.router,  prefix=PREFIX + "/action-plans")
 app.include_router(users.router,         prefix=PREFIX + "/users")
 app.include_router(notifications.router, prefix=PREFIX + "/notifications")
+
+
+# ── ROOT ───────────────────────────────────────────────────
+@app.get("/", include_in_schema=False)
+async def root():
+    """Redirect base URL to API documentation."""
+    return RedirectResponse(url="/docs")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Silence browser favicon requests."""
+    return Response(status_code=204)
 
 
 # ── HEALTH ─────────────────────────────────────────────────
